@@ -1,0 +1,51 @@
+
+-- LIMPIAR BASE DE DATOS ZULIGRES
+
+delete from empleados_por_proceso;
+
+
+delete from cabecera_proceso_ecd;
+delete from detalle_extrusion;
+
+delete from receso_por_proceso;
+delete from novedades_por_proceso;
+delete from notas_por_proceso;
+
+delete from boquilla_extrusion;
+delete from rotura_cargue_vagonetas;
+delete from  detalle_cargue_vagonetas;
+delete from  detalle_descargue_vagonetas;
+
+delete from despacho_mercancia;
+delete from detalle_despacho;
+
+update producto set stock_primera=0, stock_segunda=0, stock_extrusion=0, stock_cargue=0;
+
+
+select  id_producto, nom_producto, stock_primera, stock_segunda, stock_extrusion, stock_cargue
+from producto 
+where id_producto in (9, 10, 22)
+
+
+
+UPDATE producto SET stock_primera = CASE  
+										WHEN id_producto = 10  THEN stock_primera +  60   
+									END 
+WHERE id_producto IN (10)  
+
+select  id_producto, nom_producto, stock_primera, stock_segunda, stock_extrusion, stock_cargue, 
+		pvp_primera as pvp_unid_1ra, pvp_segunda as pvp_unid_2da, (stock_primera * pvp_primera) as total_pvp_1ra, 
+		(stock_segunda * pvp_segunda) as total_pvp_2da, (stock_primera * pvp_primera)+(stock_segunda * pvp_segunda) as total_pvp,
+		peso * stock_primera as ton_1ra, peso * stock_segunda as ton_2da, (peso * stock_primera)+(peso * stock_segunda) as total_ton
+		
+from producto 
+where id_producto in (9, 10, 22)
+
+'id', 'Producto', 'Unid 1ra', 'Unid 2da', 'Unid Extusion', 'Unid Cargue', 'PVP 1ra', 'PVP 2da', 'Total PVP 1ra', 'Total PVP 2da', 'Total PVP', 'Ton 1ra', 'Ton 2da', 'Total Ton'
+
+'int', 'str', 'int', 'int', 'int', 'int', 'int', 'int', 'int', 'int', 'int', 'float', 'float', 'float'
+
+
+"Total Unid 1ra" "Total Unid 2da" "Total Unid Extrusion" "Total Unid Cargue"
+
+"Unid 1ra" "Unid 2da" "Unid Extusion" "Unid Cargue"  "PVP 1ra" "PVP 2da" "Total PVP" "Ton 1ra" "Ton 2da" "Total Ton"
