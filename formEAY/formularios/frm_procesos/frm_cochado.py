@@ -7,25 +7,21 @@
 ## PLEASE DO "NOT" EDIT THIS FILE!
 ###########################################################################
 
-import wx
-import wx.xrc
-import wx.grid
-import wx.adv
 from uuid import uuid4
-import pandas as pd
 
-from pyeay.validator import validador_solo_digitos
-from pyeay.dbcac.conexiondb import Ejecutar_SQL, GenerarSql
+import wx
+import wx.adv
+import wx.grid
+import wx.xrc
 from pyeay.formato import FormatearNumeros
-from pyeay.rows import ManipularRows
 from pyeay.grillas import ManipularGrillas
+from pyeay.rows import ManipularRows
+from pyeay.validator import validador_solo_digitos
 
-from formEAY.constantesCAC.constantesCAC import BasesDeDatos
-from formEAY.dbaseCAC.dbVarios import DbGetVarios
-
-from formEAY.constantesCAC.imgCAC import Img_grillas, Img_produccion
 from formEAY.constantesCAC.coloresCAC import ColorsFondoCellGrilla
 from formEAY.constantesCAC.constantesCAC import AreasProduccion
+from formEAY.constantesCAC.imgCAC import Img_grillas, Img_produccion
+from formEAY.dbaseCAC.dbVarios import DbGetVarios
 
 COLOR_RESALTE1 = ColorsFondoCellGrilla.RESALTE_2
 COLOR_RESALTE2 = ColorsFondoCellGrilla.RESALTE_5

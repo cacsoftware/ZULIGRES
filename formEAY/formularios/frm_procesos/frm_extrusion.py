@@ -100,8 +100,8 @@ class Extrusion(wx.Frame):
         self.lbl_etq_total_unidades.Wrap(-1)
         bSizer14.Add(self.lbl_etq_total_unidades, 0, wx.ALL, 5)
 
-        self.txt_total_unidades = wx.TextCtrl(self.panel_cabecera, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition,
-                                       wx.Size(65, -1), validator= validador_solo_digitos())
+        self.txt_total_unidades = wx.TextCtrl(self.panel_cabecera, wx.ID_ANY, u"0",
+                                                     wx.DefaultPosition, wx.Size(65, -1), validator= validador_solo_digitos())
 
         bSizer14.Add(self.txt_total_unidades, 0, wx.ALL, 5)
 
@@ -130,18 +130,22 @@ class Extrusion(wx.Frame):
 
         bSizer8 = wx.BoxSizer(wx.HORIZONTAL)
 
+        ###__________________________________________
+
         self.lbl_etq_fecha_fin = wx.StaticText(self.panel_cabecera, wx.ID_ANY, u"Fecha Fin:", wx.DefaultPosition,
                                                wx.DefaultSize, wx.ALIGN_RIGHT)
         self.lbl_etq_fecha_fin.Wrap(-1)
         bSizer8.Add(self.lbl_etq_fecha_fin, 1, wx.ALIGN_LEFT | wx.ALL, 5)
 
         self.datePicker_fecha_fin = wx.adv.DatePickerCtrl(self.panel_cabecera, wx.ID_ANY, wx.DefaultDateTime,
-                                                      wx.DefaultPosition, wx.Size(90, -1), style = wx.adv.DP_DROPDOWN | wx.adv.DP_SHOWCENTURY)
+                                                                   wx.DefaultPosition, wx.DefaultSize, style = wx.adv.DP_DROPDOWN | wx.adv.DP_SHOWCENTURY)
         bSizer8.Add(self.datePicker_fecha_fin, 0, wx.ALL, 5)
 
         self.timePicker_hora_fin_extrusion = wx.adv.TimePickerCtrl(self.panel_cabecera, id=wx.ID_ANY, dt=wx.DefaultDateTime,
                pos=wx.DefaultPosition, size=wx.Size(110, -1), style= wx.FNTP_DEFAULT_STYLE,
                validator=wx.DefaultValidator)
+
+
 
         bSizer8.Add(self.timePicker_hora_fin_extrusion, 0, wx.ALL, 5)
 
@@ -162,27 +166,7 @@ class Extrusion(wx.Frame):
 
         bSizer_panel_empleado = wx.BoxSizer(wx.VERTICAL)
 
-        self.panel_empleado = wx.Panel(self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL)
-        self.panel_empleado.SetBackgroundColour(wx.Colour(255, 255, 255))
-
-        bSizer47 = wx.BoxSizer(wx.VERTICAL)
-
-        self.lbl_etq_selecciona_personal = wx.StaticText(self.panel_empleado, wx.ID_ANY, u"Seleciona el Personal",
-                                                         wx.DefaultPosition, wx.DefaultSize, 0)
-        self.lbl_etq_selecciona_personal.Wrap(-1)
-        bSizer47.Add(self.lbl_etq_selecciona_personal, 0, wx.ALL, 5)
-
-        checkList_personalChoices = []
-        self.checkList_personal = wx.CheckListBox(self.panel_empleado, wx.ID_ANY, wx.DefaultPosition, wx.Size(200, 200),
-                                                  checkList_personalChoices, wx.LB_MULTIPLE)
-        bSizer47.Add(self.checkList_personal, 1, wx.ALL|wx.EXPAND, 5)
-
-        self.panel_empleado.SetSizer(bSizer47)
-        self.panel_empleado.Layout()
-        bSizer47.Fit(self.panel_empleado)
-        bSizer_panel_empleado.Add(self.panel_empleado, 1, wx.EXPAND | wx.ALL, 5)
-
-        bSizer4.Add(bSizer_panel_empleado, 1, wx.EXPAND, 5)
+        bSizer4.Add(bSizer_panel_empleado, 0, wx.EXPAND, 5)
 
         bSizer_panel_extrusion1 = wx.BoxSizer(wx.VERTICAL)
 
@@ -192,6 +176,7 @@ class Extrusion(wx.Frame):
         bSizer_panel_extrusion = wx.BoxSizer(wx.VERTICAL)
 
         bSizer141 = wx.BoxSizer(wx.HORIZONTAL)
+        ###__________________________________________
 
         self.lbl_etq_producto = wx.StaticText(self.panel1_extrusion, wx.ID_ANY, u"Producto:", wx.DefaultPosition,
                                               wx.DefaultSize, 0)
@@ -203,7 +188,7 @@ class Extrusion(wx.Frame):
                                              wx.DefaultSize, comboBox_productoChoices, wx.CB_READONLY)
         bSizer141.Add(self.comboBox_producto, 2, wx.ALL, 5)
 
-        self.lbl_etq_coche = wx.StaticText(self.panel1_extrusion, wx.ID_ANY, u"Coche-Est:", wx.DefaultPosition,
+        self.lbl_etq_coche = wx.StaticText(self.panel1_extrusion, wx.ID_ANY, u"Coche/Estiba:", wx.DefaultPosition,
                                            wx.DefaultSize, 0)
         self.lbl_etq_coche.Wrap(-1)
         bSizer141.Add(self.lbl_etq_coche, 0, wx.ALL, 5)
@@ -213,23 +198,46 @@ class Extrusion(wx.Frame):
                                           wx.DefaultSize, comboBox_cocheChoices, wx.CB_READONLY)
         bSizer141.Add(self.comboBox_coche, 1, wx.ALL, 5)
 
+
+        #_________________________________________________________________________________________________________
+
         self.lbl_etq_cant_coches = wx.StaticText(self.panel1_extrusion, wx.ID_ANY, u"Cant Coches:", wx.DefaultPosition,
                                                  wx.DefaultSize, 0)
         self.lbl_etq_cant_coches.Wrap(-1)
         bSizer141.Add(self.lbl_etq_cant_coches, 0, wx.ALL, 5)
 
         self.txt_cant_coches = wx.TextCtrl(self.panel1_extrusion, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition,
-                                           wx.Size(45, -1), validator= validador_solo_digitos())
+                                           wx.Size(40, -1), validator= validador_solo_digitos())
         bSizer141.Add(self.txt_cant_coches, 0, wx.ALL, 5)
 
-        self.lbl_etq_x_coche = wx.StaticText(self.panel1_extrusion, wx.ID_ANY, u"Unidades:", wx.DefaultPosition,
+        self.lbl_etq_x_coche = wx.StaticText(self.panel1_extrusion, wx.ID_ANY, u"Unid x Coche:", wx.DefaultPosition,
                                              wx.DefaultSize, 0)
         self.lbl_etq_x_coche.Wrap(-1)
         bSizer141.Add(self.lbl_etq_x_coche, 0, wx.ALL, 5)
 
         self.txt_unidades_x_coche = wx.TextCtrl(self.panel1_extrusion, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition,
-                                                wx.Size(55, -1), validator= validador_solo_digitos())
+                                                wx.Size(40, -1), validator= validador_solo_digitos())
         bSizer141.Add(self.txt_unidades_x_coche, 0, wx.ALL, 5)
+
+        self.lbl_etq_u_x_parrilla_vacia = wx.StaticText(self.panel1_extrusion, wx.ID_ANY, u"U x Parrilla Vacia:",
+                                                        wx.DefaultPosition, wx.DefaultSize, 0)
+        self.lbl_etq_u_x_parrilla_vacia.Wrap(-1)
+        bSizer141.Add(self.lbl_etq_u_x_parrilla_vacia, 0, wx.ALL, 5)
+
+        self.txt_unidades_x_parrillaVacia = wx.TextCtrl(self.panel1_extrusion, wx.ID_ANY, wx.EmptyString,
+                                                        wx.DefaultPosition, wx.Size(40, -1), validator= validador_solo_digitos())
+        bSizer141.Add(self.txt_unidades_x_parrillaVacia, 0, wx.ALL, 5)
+
+        self.lbl_contador = wx.StaticText(self.panel1_extrusion, wx.ID_ANY, u"Contador:", wx.DefaultPosition,
+                                          wx.DefaultSize, 0)
+        self.lbl_contador.Wrap(-1)
+        bSizer141.Add(self.lbl_contador, 0, wx.ALL, 5)
+
+        self.txt_contador = wx.TextCtrl(self.panel1_extrusion, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition,
+                                        wx.Size(40, -1), validator= validador_solo_digitos())
+        bSizer141.Add(self.txt_contador, 0, wx.ALL, 5)
+
+        # _________________________________________________________________________________________________________
 
         self.btn_a_lista_extrusion = wx.Button(self.panel1_extrusion, wx.ID_ANY, u"--> Lista", wx.DefaultPosition,
                                                wx.DefaultSize, 0)
@@ -331,177 +339,39 @@ class Extrusion(wx.Frame):
 
         bSizer_notebook = wx.BoxSizer(wx.VERTICAL)
 
+
+        ##________________________________________________________________________________________
+
         self.m_notebook1 = wx.Notebook(self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize,
                                        wx.NB_NOPAGETHEME | wx.FULL_REPAINT_ON_RESIZE)
-        self.panel_notebook_boquillas = wx.Panel(self.m_notebook1, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize,
-                                                 wx.TAB_TRAVERSAL)
-        self.panel_notebook_boquillas.SetBackgroundColour(wx.Colour(255, 255, 255))
-        bSizer_panel_notebook_boquillas = wx.BoxSizer(wx.VERTICAL)
+        self.panel_empleado = wx.Panel(self.m_notebook1, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize,
+                                       wx.TAB_TRAVERSAL)
+        self.panel_empleado.SetBackgroundColour(wx.Colour(255, 255, 255))
 
-        bSizer32 = wx.BoxSizer(wx.VERTICAL)
+        bSizer47 = wx.BoxSizer(wx.VERTICAL)
 
-        self.lbl_etq_informacion_boquillas = wx.StaticText(self.panel_notebook_boquillas, wx.ID_ANY,
-                                                           u"//  Se registra la hora de inico de la extrusión con determinada Boquilla",
-                                                           wx.DefaultPosition, wx.DefaultSize, 0)
-        self.lbl_etq_informacion_boquillas.Wrap(-1)
-        self.lbl_etq_informacion_boquillas.SetForegroundColour(wx.Colour(0, 128, 0))
+        self.lbl_etq_selecciona_personal = wx.StaticText(self.panel_empleado, wx.ID_ANY, u"Seleciona el Personal",
+                                                         wx.DefaultPosition, wx.DefaultSize, 0)
+        self.lbl_etq_selecciona_personal.Wrap(-1)
+        bSizer47.Add(self.lbl_etq_selecciona_personal, 0, wx.ALL, 5)
 
-        bSizer32.Add(self.lbl_etq_informacion_boquillas, 0, wx.ALL, 5)
+        checkList_personalChoices = [u"A", u"B", u"C", u"D", u"E"]
+        self.checkList_personal = wx.CheckListBox(self.panel_empleado, wx.ID_ANY, wx.DefaultPosition, wx.Size(200, 200),
+                                                  checkList_personalChoices, wx.LB_MULTIPLE)
+        bSizer47.Add(self.checkList_personal, 1, wx.ALL | wx.EXPAND, 5)
 
-        bSizer_panel_notebook_boquillas.Add(bSizer32, 0, wx.EXPAND, 5)
-
-        bSizer33 = wx.BoxSizer(wx.HORIZONTAL)
-
-        self.lbl_etq_boquilla = wx.StaticText(self.panel_notebook_boquillas, wx.ID_ANY, u"Boquilla:",
-                                              wx.DefaultPosition, wx.DefaultSize, 0)
-        self.lbl_etq_boquilla.Wrap(-1)
-        bSizer33.Add(self.lbl_etq_boquilla, 0, wx.ALL, 5)
-
-        comboBox_boquillasChoices = []
-        self.comboBox_boquillas = wx.ComboBox(self.panel_notebook_boquillas, wx.ID_ANY, u"Combo!", wx.DefaultPosition,
-                                              wx.DefaultSize, comboBox_boquillasChoices, wx.CB_READONLY)
-        bSizer33.Add(self.comboBox_boquillas, 0, wx.ALL, 5)
-
-        self.lbl_etq_hora_1_extrusion = wx.StaticText(self.panel_notebook_boquillas, wx.ID_ANY, u"Hora 1:",
-                                                      wx.DefaultPosition, wx.DefaultSize, 0)
-        self.lbl_etq_hora_1_extrusion.Wrap(-1)
-        bSizer33.Add(self.lbl_etq_hora_1_extrusion, 0, wx.ALL, 5)
-
-        self.timePicker_hora_1 = wx.adv.TimePickerCtrl(self.panel_notebook_boquillas, id=wx.ID_ANY, dt=wx.DefaultDateTime,
-               pos=wx.DefaultPosition, size=wx.Size(110, -1), style= wx.FNTP_DEFAULT_STYLE,
-               validator=wx.DefaultValidator)
-        bSizer33.Add(self.timePicker_hora_1, 0, wx.ALL, 5)
-
-        self.lbl_etq_hora_2_extrusion = wx.StaticText(self.panel_notebook_boquillas, wx.ID_ANY, u"Hora 2:",
-                                                      wx.DefaultPosition, wx.DefaultSize, 0)
-        self.lbl_etq_hora_2_extrusion.Wrap(-1)
-        bSizer33.Add(self.lbl_etq_hora_2_extrusion, 0, wx.ALL, 5)
-
-        self.timePicker_hora_2 = wx.adv.TimePickerCtrl(self.panel_notebook_boquillas, id=wx.ID_ANY, dt=wx.DefaultDateTime,
-               pos=wx.DefaultPosition, size=wx.Size(110, -1), style= wx.FNTP_DEFAULT_STYLE,
-               validator=wx.DefaultValidator)
-        bSizer33.Add(self.timePicker_hora_2, 0, wx.ALL, 5)
-
-        self.lbl_etq_contador_1 = wx.StaticText(self.panel_notebook_boquillas, wx.ID_ANY, u"Contador 1:",
-                                                wx.DefaultPosition, wx.DefaultSize, 0)
-        self.lbl_etq_contador_1.Wrap(-1)
-        bSizer33.Add(self.lbl_etq_contador_1, 0, wx.ALL, 5)
-
-        self.txt_contador_1 = wx.TextCtrl(self.panel_notebook_boquillas, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition,
-                                          wx.Size( 110,-1 ), validator= validador_solo_digitos())
-        self.txt_contador_1.SetMaxLength(12)
-        bSizer33.Add(self.txt_contador_1, 0, wx.ALL, 5)
-
-        self.lbl_etq_contador_2 = wx.StaticText(self.panel_notebook_boquillas, wx.ID_ANY, u"Contador 2:",
-                                                wx.DefaultPosition, wx.DefaultSize, 0)
-        self.lbl_etq_contador_2.Wrap(-1)
-        bSizer33.Add(self.lbl_etq_contador_2, 0, wx.ALL, 5)
-
-        self.txt_contador_2 = wx.TextCtrl(self.panel_notebook_boquillas, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition,
-                                          wx.Size( 110,-1 ), validator= validador_solo_digitos())
-        self.txt_contador_2.SetMaxLength(12)
-        bSizer33.Add(self.txt_contador_2, 0, wx.ALL, 5)
-
-        self.btn_a_lista_boquilla = wx.Button(self.panel_notebook_boquillas, wx.ID_ANY, u"--> Lista",
-                                              wx.DefaultPosition, wx.DefaultSize, 0)
-        bSizer33.Add(self.btn_a_lista_boquilla, 0, wx.ALL, 5)
-
-        bSizer_panel_notebook_boquillas.Add(bSizer33, 0, wx.EXPAND, 5)
-
-        bSizer34 = wx.BoxSizer(wx.HORIZONTAL)
-
-        bSizer52 = wx.BoxSizer(wx.VERTICAL)
-
-        self.grid_boquilla = wx.grid.Grid(self.panel_notebook_boquillas, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize,
-                                          0)
-
-        # Grid
-        self.grid_boquilla.CreateGrid(5, 9)
-        self.grid_boquilla.EnableEditing(True)
-        self.grid_boquilla.EnableGridLines(True)
-        self.grid_boquilla.EnableDragGridSize(False)
-        self.grid_boquilla.SetMargins(0, 0)
-
-        # Columns
-        self.grid_boquilla.EnableDragColMove(False)
-        self.grid_boquilla.EnableDragColSize(True)
-        self.grid_boquilla.SetColLabelSize(30)
-        self.grid_boquilla.SetColLabelValue(0, u"id")
-        self.grid_boquilla.SetColLabelValue(1, u"Boquilla")
-        self.grid_boquilla.SetColLabelValue(2, u"Contador 1")
-        self.grid_boquilla.SetColLabelValue(3, u"Contador 2")
-        self.grid_boquilla.SetColLabelValue(4, u"Hora 1")
-        self.grid_boquilla.SetColLabelValue(5, u"Hora 2")
-        self.grid_boquilla.SetColLabelValue(6, u"Tiempo Extrusión")
-        self.grid_boquilla.SetColLabelValue(7, u"Unidades Extr.")
-        self.grid_boquilla.SetColLabelValue(8, u"Sel")
-        self.grid_boquilla.SetColLabelAlignment(wx.ALIGN_CENTRE, wx.ALIGN_CENTRE)
-
-        # Rows
-        self.grid_boquilla.SetRowSize(0, 19)
-        self.grid_boquilla.SetRowSize(1, 18)
-        self.grid_boquilla.SetRowSize(2, 19)
-        self.grid_boquilla.SetRowSize(3, 19)
-        self.grid_boquilla.SetRowSize(4, 19)
-        self.grid_boquilla.EnableDragRowSize(True)
-        self.grid_boquilla.SetRowLabelSize(40)
-        self.grid_boquilla.SetRowLabelAlignment(wx.ALIGN_CENTRE, wx.ALIGN_CENTRE)
-
-        # Label Appearance
-
-        # Cell Defaults
-        self.grid_boquilla.SetDefaultCellAlignment(wx.ALIGN_LEFT, wx.ALIGN_TOP)
-        self.grid_boquilla.AutoSizeColumns()
-
-        bSizer52.Add(self.grid_boquilla, 1, wx.ALL | wx.EXPAND, 5)
-
-        bSizer34.Add(bSizer52, 1, wx.EXPAND, 5)
-
-        bSizer412 = wx.BoxSizer(wx.VERTICAL)
-
-        self.bpButton_eliminar_item_seleccionado_grid_boquilla = wx.BitmapButton(self.panel_notebook_boquillas,
-                                                                                 wx.ID_ANY, wx.Bitmap(
-                icono_grillas.ELIMINAR_ITEM_SELECIONADO, wx.BITMAP_TYPE_ANY), wx.DefaultPosition,
-                                                                                 wx.DefaultSize,
-                                                                                 wx.BU_AUTODRAW | wx.NO_BORDER)
-
-        self.bpButton_eliminar_item_seleccionado_grid_boquilla.SetBitmapCurrent(
-            wx.Bitmap(icono_grillas.ELIMINAR_ITEM_SELECIONADO_SEL, wx.BITMAP_TYPE_ANY))
-        bSizer412.Add(self.bpButton_eliminar_item_seleccionado_grid_boquilla, 0, wx.ALL, 5)
-
-        self.bpButton_deseleccionar_todo_grid_boquilla = wx.BitmapButton(self.panel_notebook_boquillas, wx.ID_ANY,
-                                                                             wx.Bitmap(
-                                                                                 icono_grillas.DESELECCIONAR_TODO,
-                                                                                 wx.BITMAP_TYPE_ANY),
-                                                                             wx.DefaultPosition, wx.DefaultSize,
-                                                                             wx.BU_AUTODRAW | wx.NO_BORDER)
-
-        self.bpButton_deseleccionar_todo_grid_boquilla.SetBitmapCurrent(
-            wx.Bitmap(icono_grillas.DESELECCIONAR_TODO_SEL, wx.BITMAP_TYPE_ANY))
-        bSizer412.Add(self.bpButton_deseleccionar_todo_grid_boquilla, 0, wx.ALL, 5)
-
-        self.bpButton_limpiar_grid_boquilla = wx.BitmapButton(self.panel_notebook_boquillas, wx.ID_ANY,
-                                                                         wx.Bitmap(
-                                                                             icono_grillas.LIMPIAR_GRILLA,
-                                                                             wx.BITMAP_TYPE_ANY), wx.DefaultPosition,
-                                                                         wx.DefaultSize, wx.BU_AUTODRAW | wx.NO_BORDER)
-
-        self.bpButton_limpiar_grid_boquilla.SetBitmapCurrent(
-            wx.Bitmap(icono_grillas.LIMPIAR_GRILLA_SEL, wx.BITMAP_TYPE_ANY))
-        bSizer412.Add(self.bpButton_limpiar_grid_boquilla, 0, wx.ALL, 5)
-
-        bSizer34.Add(bSizer412, 0, wx.EXPAND, 5)
-
-        bSizer_panel_notebook_boquillas.Add(bSizer34, 1, wx.EXPAND, 5)
-
-        self.panel_notebook_boquillas.SetSizer(bSizer_panel_notebook_boquillas)
-        self.panel_notebook_boquillas.Layout()
-        bSizer_panel_notebook_boquillas.Fit(self.panel_notebook_boquillas)
-        self.m_notebook1.AddPage(self.panel_notebook_boquillas, u"Boquillas", True)
+        self.panel_empleado.SetSizer(bSizer47)
+        self.panel_empleado.Layout()
+        bSizer47.Fit(self.panel_empleado)
+        self.m_notebook1.AddPage(self.panel_empleado, u"Empleados", True)
         self.panel_notebook_recesos = wx.Panel(self.m_notebook1, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize,
                                                wx.TAB_TRAVERSAL)
         self.panel_notebook_recesos.SetBackgroundColour(wx.Colour(255, 255, 255))
+
         bSizer_panel_notebook_recesos = wx.BoxSizer(wx.VERTICAL)
+
+
+        ## _____________________________________________________________________________
 
         bSizer36 = wx.BoxSizer(wx.VERTICAL)
 
@@ -929,10 +799,11 @@ class Extrusion(wx.Frame):
 
         self.m_notebook1.Bind(wx.EVT_NOTEBOOK_PAGE_CHANGED, self.m_notebook1OnNotebookPageChanged)
 
-        self.comboBox_boquillas.Bind(wx.EVT_LEFT_DOWN, self.comboBox_boquillasOnLeftDown)
+        # self.comboBox_boquillas.Bind(wx.EVT_LEFT_DOWN, self.comboBox_boquillasOnLeftDown)
         self.comboBox_turno.Bind(wx.EVT_LEFT_DOWN, self.comboBox_turnoOnLeftDown)
         self.comboBox_producto.Bind(wx.EVT_LEFT_DOWN, self.comboBox_productoOnLeftDown)
         self.comboBox_coche.Bind(wx.EVT_LEFT_DOWN, self.comboBox_cocheOnLeftDown)
+        self.comboBox_coche.Bind(wx.EVT_COMBOBOX, self.comboBox_cocheOnCombobox)
         self.comboBox_relevancia_nota.Bind(wx.EVT_LEFT_DOWN, self.comboBox_relevancia_notaOnLeftDown)
         self.comboBox_contexto.Bind(wx.EVT_LEFT_DOWN, self.comboBox_contextoOnLeftDown)
         self.comboBox_turno.Bind(wx.EVT_COMBOBOX, self.comboBox_turnoOnCombobox)
@@ -940,7 +811,7 @@ class Extrusion(wx.Frame):
         self.btn_a_lista_extrusion.Bind(wx.EVT_BUTTON, self.btn_a_lista_extrusionOnButtonClick)
 
         self.bpButton_eliminar_item_seleccionado_grid_extrusion.Bind(wx.EVT_BUTTON, self.bpButton_eliminar_item_seleccionado_grid_extrusionOnButtonClick)
-        self.bpButton_eliminar_item_seleccionado_grid_boquilla.Bind(wx.EVT_BUTTON, self.bpButton_eliminar_item_seleccionado_grid_boquillaOnButtonClick)
+        # self.bpButton_eliminar_item_seleccionado_grid_boquilla.Bind(wx.EVT_BUTTON, self.bpButton_eliminar_item_seleccionado_grid_boquillaOnButtonClick)
         self.bpButton_eliminar_item_seleccionado_grid_novedades.Bind(wx.EVT_BUTTON, self.bpButton_eliminar_item_seleccionado_grid_novedadesOnButtonClick)
         self.bpButton_eliminar_item_seleccionado_grid_notas.Bind(wx.EVT_BUTTON, self.bpButton_eliminar_item_seleccionado_grid_notasOnButtonClick)
 
@@ -948,17 +819,17 @@ class Extrusion(wx.Frame):
         self.bpButton_deseleccionar_todo_grid_extrusion.Bind(wx.EVT_BUTTON, self.bpButton_deseleccionar_todo_grid_extrusionOnButtonClick)
         self.bpButton_deseleccionar_todo_grid_novedades.Bind(wx.EVT_BUTTON, self.bpButton_deseleccionar_todo_grid_novedadesOnButtonClick)
         self.bpButton_deseleccionar_todo_grid_notas.Bind(wx.EVT_BUTTON, self.bpButton_deseleccionar_todo_grid_notasOnButtonClick)
-        self.bpButton_deseleccionar_todo_grid_boquilla.Bind(wx.EVT_BUTTON, self.bpButton_deseleccionar_todo_grid_boquillaOnButtonClick)
+        # self.bpButton_deseleccionar_todo_grid_boquilla.Bind(wx.EVT_BUTTON, self.bpButton_deseleccionar_todo_grid_boquillaOnButtonClick)
 
 
         self.bpButton_limpiar_grid_notas.Bind(wx.EVT_BUTTON, self.bpButton_limpiar_grid_notasOnButtonClick)
         self.bpButton_limpiar_grid_novedades.Bind(wx.EVT_BUTTON, self.bpButton_limpiar_grid_novedadesOnButtonClick)
-        self.bpButton_limpiar_grid_boquilla.Bind(wx.EVT_BUTTON, self.bpButton_limpiar_grid_boquillaOnButtonClick)
+        # self.bpButton_limpiar_grid_boquilla.Bind(wx.EVT_BUTTON, self.bpButton_limpiar_grid_boquillaOnButtonClick)
         self.bpButton_limpiar_grid_extrusion.Bind(wx.EVT_BUTTON, self.bpButton_limpiar_grid_extrusionOnButtonClick)
 
 
-        self.btn_a_lista_boquilla.Bind(wx.EVT_BUTTON, self.btn_a_lista_boquillaOnButtonClick)
-        self.grid_boquilla.Bind(wx.grid.EVT_GRID_CELL_LEFT_CLICK, self.grid_boquillaOnGridCellLeftClick)
+        # self.btn_a_lista_boquilla.Bind(wx.EVT_BUTTON, self.btn_a_lista_boquillaOnButtonClick)
+        # self.grid_boquilla.Bind(wx.grid.EVT_GRID_CELL_LEFT_CLICK, self.grid_boquillaOnGridCellLeftClick)
 
 
         self.btn_a_lista_novedades.Bind(wx.EVT_BUTTON, self.btn_a_lista_novedadesOnButtonClick)
@@ -986,14 +857,26 @@ class Extrusion(wx.Frame):
         event.Skip()
 
 
-    def comboBox_boquillasOnLeftDown(self, event):
-        if self.comboBox_boquillas.GetItems() == []:
-            self.cargar_combo_boquillas()
+    def comboBox_cocheOnCombobox(self, event):
+        tipo_coche = self.comboBox_coche.GetValue()
+        if tipo_coche == 'ESTIBA':
+            self.lbl_etq_cant_coches.SetLabel('Cant Estibas:')
+            self.lbl_etq_x_coche.SetLabel('Unid x Estiba:')
+            self.lbl_etq_u_x_parrilla_vacia.Hide()
+            self.txt_unidades_x_parrillaVacia.Hide()
+        else:
+            self.lbl_etq_cant_coches.SetLabel('Cant Coches:')
+            self.lbl_etq_x_coche.SetLabel('Unid x Coche:')
+            self.lbl_etq_u_x_parrilla_vacia.Show()
+            self.txt_unidades_x_parrillaVacia.Show()
+        self.Layout()
         event.Skip()
 
     def comboBox_cocheOnLeftDown(self, event):
         if self.comboBox_coche.GetItems() == []:
             self.cargar_combo_coches()
+
+
         event.Skip()
 
     def comboBox_productoOnLeftDown(self, event):
@@ -1471,28 +1354,22 @@ class Extrusion(wx.Frame):
 
 
     def cargar_valores_de_inicializacion(self):
-
-        # self.txt_total_coches.SetMaxLength(6)
-        # self.txt_total_unidades.SetMaxLength(9)
         self.txt_total_coches.Hide()
         self.txt_total_unidades.Hide()
 
         self.lbl_etq_total_coches.Hide()
         self.lbl_etq_total_unidades.Hide()
 
-
         self.txt_cant_coches.SetMaxLength(5)
         self.txt_unidades_x_coche.SetMaxLength(7)
-        self.txt_contador_1.SetMaxLength(12)
-        self.txt_contador_1.SetMaxLength(12)
+        self.txt_contador.SetMaxLength(12)
+        self.txt_contador.SetMaxLength(12)
         self.txt_tiempo_parada_minutos.SetMaxLength(4)
 
         self.puntero_fila_extrusion = 0
         self.puntero_fila_boquilla = 0
         self.puntero_fila_notas = 0
         self.puntero_fila_novedades = 0
-
-
 
         self.cargar_checkList_personal()
 
@@ -1513,13 +1390,13 @@ class Extrusion(wx.Frame):
         self.btn_a_lista_extrusion.SetBackgroundColour(colors_botones.AGREGAR_A_LISTA)
         self.btn_a_lista_notas.SetBackgroundColour(colors_botones.AGREGAR_A_LISTA)
         self.btn_a_lista_novedades.SetBackgroundColour(colors_botones.AGREGAR_A_LISTA)
-        self.btn_a_lista_boquilla.SetBackgroundColour(colors_botones.AGREGAR_A_LISTA)
+        # self.btn_a_lista_boquilla.SetBackgroundColour(colors_botones.AGREGAR_A_LISTA)
 
         self.btn_guardar.SetWindowStyleFlag(wx.NO_BORDER)
         self.btn_a_lista_extrusion.SetWindowStyleFlag(wx.NO_BORDER)
         self.btn_a_lista_notas.SetWindowStyleFlag(wx.NO_BORDER)
         self.btn_a_lista_novedades.SetWindowStyleFlag(wx.NO_BORDER)
-        self.btn_a_lista_boquilla.SetWindowStyleFlag(wx.NO_BORDER)
+        # self.btn_a_lista_boquilla.SetWindowStyleFlag(wx.NO_BORDER)
 
         self.lbl_estado_guardar.SetLabel('')
 
@@ -1527,7 +1404,7 @@ class Extrusion(wx.Frame):
 
     def set_configuracion_grillas(self):
         self.set_configuaracion_grilla_extrusion()
-        self.set_configuaracion_grilla_boquilla()
+        #self.set_configuaracion_grilla_boquilla()
         self.set_configuracion_grilla_recesos()
         self.set_configuaracion_grilla_novedades()
         self.set_configuaracion_grilla_notas()
@@ -1538,8 +1415,8 @@ class Extrusion(wx.Frame):
         self.grid_extrusion.SetLabelBackgroundColour(wx.WHITE)
         self.grid_extrusion.SetLabelTextColour(wx.BLACK)
 
-        self.grid_boquilla.SetLabelBackgroundColour(wx.WHITE)
-        self.grid_boquilla.SetLabelTextColour(wx.BLACK)
+        # self.grid_boquilla.SetLabelBackgroundColour(wx.WHITE)
+        # self.grid_boquilla.SetLabelTextColour(wx.BLACK)
 
         self.grid_recesos.SetLabelBackgroundColour(wx.WHITE)
         self.grid_recesos.SetLabelTextColour(wx.BLACK)
@@ -1565,12 +1442,12 @@ class Extrusion(wx.Frame):
         list_columnas = [4]
         ManipularGrillas.setColumnasFormatoCHK(self.grid_novedades, list_columnas)
 
-    def set_configuaracion_grilla_boquilla(self):
-        list_columnas = [0,1, 2, 3, 4, 5, 6, 7]
-        ManipularGrillas.setColumnasSoloLectura(self.grid_boquilla, list_columnas)
-
-        list_columnas = [8]
-        ManipularGrillas.setColumnasFormatoCHK(self.grid_boquilla, list_columnas)
+    # def set_configuaracion_grilla_boquilla(self):
+    #     list_columnas = [0,1, 2, 3, 4, 5, 6, 7]
+    #     ManipularGrillas.setColumnasSoloLectura(self.grid_boquilla, list_columnas)
+    #
+    #     list_columnas = [8]
+    #     ManipularGrillas.setColumnasFormatoCHK(self.grid_boquilla, list_columnas)
 
     def set_configuaracion_grilla_extrusion(self):
         list_columnas = [0,1, 2 ]
@@ -1593,7 +1470,7 @@ class Extrusion(wx.Frame):
 
     def limpiar_todas_las_grillas(self): 
         self.puntero_fila_extrusion= ManipularGrillas.limpiarGrilla(self.grid_extrusion)
-        self.puntero_fila_boquilla = ManipularGrillas.limpiarGrilla(self.grid_boquilla)
+        #self.puntero_fila_boquilla = ManipularGrillas.limpiarGrilla(self.grid_boquilla)
         self.puntero_fila_notas = ManipularGrillas.limpiarGrilla(self.grid_notas)
         self.puntero_fila_novedades = ManipularGrillas.limpiarGrilla(self.grid_novedades)
         self.puntero_fila_recesos_programados = ManipularGrillas.limpiarGrilla(self.grid_recesos)
