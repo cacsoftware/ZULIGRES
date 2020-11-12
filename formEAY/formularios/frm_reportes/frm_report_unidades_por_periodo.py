@@ -1300,7 +1300,7 @@ class UnidadesPorPeriodo(wx.Frame):
             cabeceras_estadisticas = ['Unidades']
             cabeceras_estadisticas2 = ['Toneladas']
             if periodo == 'DIA':
-                sSql = """  SELECT c_ecd.fecha_inicio, sum(de.unidades_producto), trunc(sum(p.peso * de.unidades_producto / 1000000.0), 2)
+                sSql = """  SELECT c_ecd.fecha_inicio, sum(de.total), trunc(sum(p.peso * de.total / 1000000.0), 2)
                             FROM detalle_extrusion as de, producto as p, cabecera_proceso_ecd as c_ecd
                             WHERE p.id_producto = de.id_producto and c_ecd.uuid = de.uuid and de.activo = True
                                 AND fecha_inicio >= '{0}' and fecha_inicio <= '{1}'  {2}
@@ -1314,7 +1314,7 @@ class UnidadesPorPeriodo(wx.Frame):
 
             if periodo == 'SEMANA':
                 sSql = """  SELECT date_part('year',c_ecd.fecha_inicio) as anyo,  date_part('week',c_ecd.fecha_inicio) as semana, 
-                                    sum(de.unidades_producto), trunc(sum(p.peso * de.unidades_producto / 1000000.0), 2)
+                                    sum(de.total), trunc(sum(p.peso * de.total / 1000000.0), 2)
                             FROM detalle_extrusion as de, producto as p, cabecera_proceso_ecd as c_ecd
                             WHERE p.id_producto = de.id_producto and c_ecd.uuid = de.uuid and de.activo = True
                                 AND fecha_inicio >= '{0}' and fecha_inicio <= '{1}'  {2}
@@ -1327,7 +1327,7 @@ class UnidadesPorPeriodo(wx.Frame):
                 cols_estadisticas2 = [3]
             if periodo == 'MES':
                 sSql = """  SELECT date_part('year',c_ecd.fecha_inicio) as anyo,  date_part('month',c_ecd.fecha_inicio) as mes, 
-                                    sum(de.unidades_producto), trunc(sum(p.peso * de.unidades_producto / 1000000.0), 2)
+                                    sum(de.total), trunc(sum(p.peso * de.total / 1000000.0), 2)
                             FROM detalle_extrusion as de, producto as p, cabecera_proceso_ecd as c_ecd
                             WHERE p.id_producto = de.id_producto and c_ecd.uuid = de.uuid and de.activo = True
                                 AND fecha_inicio >= '{0}' and fecha_inicio <= '{1}'  {2}
@@ -1340,7 +1340,7 @@ class UnidadesPorPeriodo(wx.Frame):
                 cols_estadisticas2 = [3]
 
             if periodo == u'AÑO':
-                sSql = """  SELECT date_part('year',c_ecd.fecha_inicio) as anyo,  sum(de.unidades_producto), trunc(sum(p.peso * de.unidades_producto / 1000000.0), 2)
+                sSql = """  SELECT date_part('year',c_ecd.fecha_inicio) as anyo,  sum(de.total), trunc(sum(p.peso * de.total / 1000000.0), 2)
                             FROM detalle_extrusion as de, producto as p, cabecera_proceso_ecd as c_ecd
                             WHERE p.id_producto = de.id_producto and c_ecd.uuid = de.uuid and de.activo = True
                                 AND fecha_inicio >= '{0}' and fecha_inicio <= '{1}'  {2}

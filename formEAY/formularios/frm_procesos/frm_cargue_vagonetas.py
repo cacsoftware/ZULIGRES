@@ -875,7 +875,12 @@ class CargueVagonetas(wx.Frame):
         # self.bpButton_limpiar_grid_cargueVagonetas.Bind(wx.EVT_BUTTON, self.bpButton_limpiar_grid_cargueVagonetasOnButtonClick)
 
         self.btn_a_lista_unidadesRotas.Bind(wx.EVT_BUTTON, self.btn_a_lista_unidadesRotasOnButtonClick)
+
+
         self.grid_rotura.Bind(wx.grid.EVT_GRID_CELL_LEFT_CLICK, self.grid_roturaOnGridCellLeftClick)
+        self.grid_cargueVagonetas.Bind(wx.grid.EVT_GRID_CELL_CHANGED, self.grid_cargueVagonetasOnGridCellChange)
+
+
 
         self.btn_a_lista_novedades.Bind(wx.EVT_BUTTON, self.btn_a_lista_novedadesOnButtonClick)
         self.grid_novedades.Bind(wx.grid.EVT_GRID_CELL_LEFT_CLICK, self.grid_novedadesOnGridCellLeftClick)
@@ -981,13 +986,28 @@ class CargueVagonetas(wx.Frame):
         self.btn_guardar.Hide()
 
         ##
+        fecha_transacccion, hora_transacion = ManejoFechasHoras.getFechaHoraActual()
+
+        self.btn_guardar.Hide()
+
+        cant_segundos = ManejoFechasHoras.cantidadSegundosEntre2Fechas(self.datePicker_fecha_inicio_extrusion,
+                                                                       self.datePicker_fecha_fin,
+                                                                       self.timePicker_hora_inicio_extrusion,
+                                                                       self.timePicker_hora_fin_extrusion)
+
+        minutos_jornada = cant_segundos / 60
+        minutos_receso, minutos_novedades = self.func_calcular_tiempos()
+
+
+
         self.lbl_estado_guardar.SetLabel('1/8  Estamos guardando, el procesos puede tardar unos segundos...')
         rta_cabecera = DbInsertVarios.cabeceraProcesoECD(self.uuid_eay, self.usuario, self.dir_mac,
                                                            fecha_transacccion,
                                                            hora_transacion, id_turno, el_turno,
                                                            total_vagonetas_grid, total_unidades_grid, fecha_inicio, hora_inicio,
                                                            fecha_fin,
-                                                           hora_fin, activo, self.AREA_PRODUCCION)
+                                                           hora_fin, activo, self.AREA_PRODUCCION,
+                                                         minutos_jornada, minutos_receso, minutos_novedades)
 
         self.lbl_estado_guardar.SetLabel('2/8  Estamos guardando, el proceso puede tardar unos segundos...')
         rta_insert_DetalleCargueVagonetas = DbInsertVarios.detalleCargueVagonetas(self)
@@ -1284,6 +1304,10 @@ class CargueVagonetas(wx.Frame):
     def grid_roturaOnGridCellLeftClick(self, event):
         event.Skip()
 
+    def grid_cargueVagonetasOnGridCellChange(self, event):
+        self.recalcular_porcentaje_cubicacion_toda_tabla()
+        event.Skip()
+
     def grid_novedadesOnGridCellLeftClick(self, event):
         event.Skip()
 
@@ -1305,6 +1329,48 @@ class CargueVagonetas(wx.Frame):
 
 
     ##  FUNCIONES EAY
+    def func_calcular_tiempos(self):
+        minutos_recesos = 0
+        minutos_novedades = 0
+        filas_recesos = self.grid_recesos.GetNumberRows()
+        for i in range(filas_recesos):
+            minutos_recesos += int(self.grid_recesos.GetCellValue(i, 2))
+
+        filas_novedades = self.grid_novedades.GetNumberRows()
+        for i in range(filas_novedades):
+            minutos_novedades += int(self.grid_novedades.GetCellValue(i, 2))
+
+        return(minutos_recesos, minutos_novedades)
+
+    def recalcular_porcentaje_cubicacion_toda_tabla(self):
+        cant_filas = self.grid_cargueVagonetas.GetNumberRows()
+        cant_cols = self.grid_cargueVagonetas.GetNumberCols() - 2
+
+        cubicacion = 0.0
+
+        for i in range(cant_filas):
+            cubicacion = 0.0
+            for j in range(cant_cols):
+                valor_celda = self.grid_cargueVagonetas.GetCellValue(i, j+2)
+                if valor_celda == '':
+                    valor_celda = 0.0
+                else:
+                    valor_celda = float(valor_celda)
+                producto = self.grid_cargueVagonetas.GetColLabelValue(j + 2)
+                unidades_x_vagoneta = float(self.dic_productos_id[producto][5])
+
+                cubicacion += (valor_celda / unidades_x_vagoneta) * 1.0
+
+            if cubicacion > 1.02:
+                COLOR_ROSADO = wx.Colour(255, 206, 222)
+                self.grid_cargueVagonetas.SetCellBackgroundColour(i, 1, COLOR_ROSADO)
+            else:
+                COLOR_GRIS = wx.Colour(240, 240, 240)
+                self.grid_cargueVagonetas.SetCellBackgroundColour(i, 1, COLOR_GRIS)
+
+            self.grid_cargueVagonetas.SetCellValue(i, 1, str(round(cubicacion, 3)))
+            self.Layout()
+
     def func_actualizar_stock_productos(self):
 
         #-----------------------------------
@@ -1312,10 +1378,10 @@ class CargueVagonetas(wx.Frame):
         cant_columnas = self.grid_cargueVagonetas.GetNumberCols()
         list_valores = []
 
-        for j in range(1, cant_columnas):
+        for j in range(2, cant_columnas):
             list_fila = []
             producto = self.grid_cargueVagonetas.GetColLabelValue(j)
-            id_producto = self.dic_productos_id[producto]
+            id_producto = self.dic_productos_id[producto][0]
             list_fila.append(id_producto)
 
             total_unidades = 0
@@ -1328,7 +1394,6 @@ class CargueVagonetas(wx.Frame):
             list_fila.append(total_unidades)
 
             list_valores.append(list_fila)
-
 
         rows_sumar_a_stock_cargue = list_valores
 
@@ -1382,8 +1447,6 @@ class CargueVagonetas(wx.Frame):
 
         rta = Ejecutar_SQL.insert_filas(sSql, 'frm_cargue_vagonetas/func_actualizar_stock_productos', BasesDeDatos.DB_PRINCIPAL)
 
-
-
         return rta
 
     def cargar_grid_cargueVagonetas(self, rows, cant_cols, row_cabeceras, list_columnas_soloNumeros, dic_productos_id):
@@ -1396,14 +1459,33 @@ class CargueVagonetas(wx.Frame):
 
         ManipularGrillas.setColumnasSoloNumeros(self.grid_cargueVagonetas, list_columnas_soloNumeros)
 
-        list_columnas = [0]
+        list_columnas = [0, 1]
         ManipularGrillas.setColumnasSoloLectura(self.grid_cargueVagonetas, list_columnas)
 
-        dic_color = {0: COLOR_RESALTE1}
+        COLOR_GRIS = wx.Colour(240, 240, 240)
+        dic_color = {0: COLOR_GRIS, 1: COLOR_GRIS}
         ManipularGrillas.setColorFondoCeldaGrilla(self.grid_cargueVagonetas, dic_color)
+
+        self.func_colorear_porcentaje_cubicaccion_mayor_102()
 
 
         self.grid_cargueVagonetas.AutoSizeColumns()
+
+    def func_colorear_porcentaje_cubicaccion_mayor_102(self):
+        filas = self.grid_cargueVagonetas.GetNumberRows()
+        cubicacion = 0.0
+        for i in range(filas):
+            dato = self.grid_cargueVagonetas.GetCellValue(i, 1)
+            if dato == '':
+                dato = 0.0
+            cubicacion = float()
+            if cubicacion > 1.02:
+                COLOR_ROSADO = wx.Colour(255, 206, 222)
+                self.grid_cargueVagonetas.SetCellBackgroundColour(i, 1, COLOR_ROSADO)
+            else:
+                COLOR_GRIS = wx.Colour(240, 240, 240)
+                self.grid_cargueVagonetas.SetCellBackgroundColour(i, 1, COLOR_GRIS)
+
 
     def guardar_listaRotura(self):
 
@@ -1636,7 +1718,7 @@ class CargueVagonetas(wx.Frame):
 
         total_unidades = 0
         for i in range(cant_filas):
-            for j in range(1, cant_cols):
+            for j in range(2, cant_cols):
                 dato = self.grid_cargueVagonetas.GetCellValue(i, j)
                 if dato == '':
                     dato = 0

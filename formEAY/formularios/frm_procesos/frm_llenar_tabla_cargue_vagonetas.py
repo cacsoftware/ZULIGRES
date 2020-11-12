@@ -32,7 +32,7 @@ class LlenarTablaCargueVagonetas(wx.Frame):
 
         self.list_vagonetas = []
         self.puntero_fila = 0
-        self.puntero_columna = 1
+        self.puntero_columna = 2
 
         bSizer_principal = wx.BoxSizer(wx.HORIZONTAL)
 
@@ -125,7 +125,7 @@ class LlenarTablaCargueVagonetas(wx.Frame):
         self.grid_tabla = wx.grid.Grid(self.m_panel_tabla, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, 0)
 
         # Grid
-        self.grid_tabla.CreateGrid(0, 1)
+        self.grid_tabla.CreateGrid(0, 2)
         self.grid_tabla.EnableEditing(True)
         self.grid_tabla.EnableGridLines(True)
         self.grid_tabla.EnableDragGridSize(False)
@@ -137,6 +137,7 @@ class LlenarTablaCargueVagonetas(wx.Frame):
         self.grid_tabla.EnableDragColSize(True)
         self.grid_tabla.SetColLabelSize(30)
         self.grid_tabla.SetColLabelValue(0, u"Vagoneta")
+        self.grid_tabla.SetColLabelValue(1, u"% Cubicación")
         self.grid_tabla.SetColLabelAlignment(wx.ALIGN_CENTRE, wx.ALIGN_CENTRE)
 
         # Rows
@@ -156,7 +157,7 @@ class LlenarTablaCargueVagonetas(wx.Frame):
 
         # Grid
         self.m_grid_totales.CreateGrid(1, 0)
-        self.m_grid_totales.EnableEditing(True)
+        self.m_grid_totales.EnableEditing(False)
         self.m_grid_totales.EnableGridLines(True)
         self.m_grid_totales.EnableDragGridSize(False)
         self.m_grid_totales.SetMargins(0, 0)
@@ -243,7 +244,12 @@ class LlenarTablaCargueVagonetas(wx.Frame):
             if dato == '':
                 dato = 0
             total += int(dato)
-        self.m_grid_totales.SetCellValue(0, columna-1, str(total))
+        self.m_grid_totales.SetCellValue(0, columna-2, str(total))
+
+        dic_color = {0: wx.Colour(240, 240, 240), 1: wx.Colour(240, 240, 240)}
+        ManipularGrillas.setColorFondoCeldaGrilla(self.grid_tabla, dic_color)
+
+        self.recalcular_porcentaje_cubicacion_toda_tabla()
 
         event.Skip()
 
@@ -254,8 +260,8 @@ class LlenarTablaCargueVagonetas(wx.Frame):
             self.puntero_columna = ManipularGrillas.nuevaColumnaVaciaGrilla(self.grid_tabla, self.puntero_columna)
             self.grid_tabla.SetColLabelValue(self.puntero_columna - 1, cad_checkeado)
 
-            puntero_columna_totales = ManipularGrillas.nuevaColumnaVaciaGrilla(self.m_grid_totales, self.puntero_columna-1)
-            self.m_grid_totales.SetColLabelValue(self.puntero_columna - 2, cad_checkeado)
+            puntero_columna_totales = ManipularGrillas.nuevaColumnaVaciaGrilla(self.m_grid_totales, self.puntero_columna-2)
+            self.m_grid_totales.SetColLabelValue(self.puntero_columna - 3, cad_checkeado)
 
         else:
             cant_columnas = self.grid_tabla.GetNumberCols()
@@ -266,7 +272,7 @@ class LlenarTablaCargueVagonetas(wx.Frame):
                     posicion = i
                     self.puntero_columna = ManipularGrillas.delColumna(self.grid_tabla, posicion)
 
-                    puntero_columna_totales = ManipularGrillas.delColumna(self.m_grid_totales, posicion-1)  ## -1 porque grid_tabla empieza en la segunda columna
+                    puntero_columna_totales = ManipularGrillas.delColumna(self.m_grid_totales, posicion-2)  ## -2 porque grid_tabla empieza en la segunda columna
 
                     cant_filas_total = self.m_grid_totales.GetNumberRows()
                     if cant_filas_total == 0:
@@ -274,14 +280,20 @@ class LlenarTablaCargueVagonetas(wx.Frame):
 
                     break
 
-        dic_color = {0: wx.Colour(240, 240, 240)}
-        ManipularGrillas.setColorFondoCeldaGrilla(self.grid_tabla, dic_color)
+
 
         list_columnas = self.columnasGrillaSoloNumeros()
         ManipularGrillas.setColumnasSoloNumeros(self.grid_tabla, list_columnas)
 
-        list_columnas = [0]
+        list_columnas = [0, 1]
         ManipularGrillas.setColumnasSoloLectura(self.grid_tabla, list_columnas)
+
+
+
+        dic_color = {0: wx.Colour(240, 240, 240), 1: wx.Colour(240, 240, 240)}
+        ManipularGrillas.setColorFondoCeldaGrilla(self.grid_tabla, dic_color)
+
+        self.recalcular_porcentaje_cubicacion_toda_tabla()
 
         self.grid_tabla.AutoSizeColumns()
         self.m_grid_totales.AutoSizeColumns()
@@ -304,14 +316,14 @@ class LlenarTablaCargueVagonetas(wx.Frame):
                     self.puntero_fila = ManipularGrillas.delFila(self.grid_tabla, posicion)
                     break
 
-        dic_color = {0: wx.Colour(240, 240, 240)}
+        dic_color = {0: wx.Colour(240, 240, 240), 1: wx.Colour(240, 240, 240)}
         ManipularGrillas.setColorFondoCeldaGrilla(self.grid_tabla, dic_color)
 
         list_columnas = self.columnasGrillaSoloNumeros()
         ManipularGrillas.setColumnasSoloNumeros(self.grid_tabla, list_columnas)
 
-        list_columnas = [0]
-        ManipularGrillas.setColumnasSoloLectura(self.grid_tabla, list_columnas)
+        # list_columnas = [0]
+        # ManipularGrillas.setColumnasSoloLectura(self.grid_tabla, list_columnas)
 
         self.grid_tabla.AutoSizeColumns()
         event.Skip()
@@ -320,6 +332,9 @@ class LlenarTablaCargueVagonetas(wx.Frame):
         event.Skip()
 
     def btn_limpiarOnButtonClick(self, event):
+        self.recalcular_porcentaje_cubicacion_toda_tabla()
+        return 0
+
         cant_filas = self.grid_tabla.GetNumberRows()
         cant_cols = self.grid_tabla.GetNumberCols()
 
@@ -356,12 +371,38 @@ class LlenarTablaCargueVagonetas(wx.Frame):
 
         self.padre.cargar_grid_cargueVagonetas(rows, cant_cols, row_cabeceras, list_columnas_soloNumeros, self.dic_cargueVagonetas)
 
-
-
-
         event.Skip()
 
 ## FUNCIONES EAY
+    def recalcular_porcentaje_cubicacion_toda_tabla(self):
+        cant_filas = self.grid_tabla.GetNumberRows()
+        cant_cols = self.grid_tabla.GetNumberCols() - 2
+
+        cubicacion = 0.0
+
+        for i in range(cant_filas):
+            cubicacion = 0.0
+            for j in range(cant_cols):
+                valor_celda = self.grid_tabla.GetCellValue(i, j+2)
+                if valor_celda == '':
+                    valor_celda = 0.0
+                else:
+                    valor_celda = float(valor_celda)
+                producto = self.grid_tabla.GetColLabelValue(j + 2)
+                unidades_x_vagoneta = float(self.dic_cargueVagonetas[producto][5])
+
+                cubicacion += (valor_celda / unidades_x_vagoneta) * 1.0
+
+            if cubicacion > 1.02:
+                COLOR_ROSADO = wx.Colour(255, 206, 222)
+                self.grid_tabla.SetCellBackgroundColour(i, 1, COLOR_ROSADO)
+            else:
+                COLOR_GRIS = wx.Colour(240, 240, 240)
+                self.grid_tabla.SetCellBackgroundColour(i, 1, COLOR_GRIS)
+
+            self.grid_tabla.SetCellValue(i, 1, str(round(cubicacion, 3)))
+            self.Layout()
+
 
     def columnasGrillaSoloNumeros(self):
         cant_cols = self.grid_tabla.GetNumberCols()
@@ -376,6 +417,9 @@ class LlenarTablaCargueVagonetas(wx.Frame):
         self.grid_tabla.AutoSizeColumns()
         self.cargar_checkList_vagonetas()
         self.cargar_checkList_productos()
+
+        list_columnas = [0, 1]
+        ManipularGrillas.setColumnasSoloLectura(self.grid_tabla, list_columnas)
 
 
         # list_columnas = [2]
@@ -398,7 +442,7 @@ class LlenarTablaCargueVagonetas(wx.Frame):
 
         if rows != None:
             la_lista = ManipularRows.crearListaValores(rows, 1)
-            self.dic_cargueVagonetas = ManipularRows.crearDiccionario(rows, 1, 0)
+            self.dic_cargueVagonetas = ManipularRows.crearDiccionarioTodosLosCampos(rows, 1)
             self.checkList_producto.Set(la_lista)
 
 

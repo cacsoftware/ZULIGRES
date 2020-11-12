@@ -49,6 +49,7 @@ class DescargueVagonetas(wx.Frame):
         self.SetBackgroundColour(wx.Colour(240, 240, 240))
 
         self.dic_productos_id = 0
+        self.dic_vagonetas_fechas = {}
 
         self.AREA_PRODUCCION = AreasProduccion.DESCARGUE_VAGONETAS
         self.uuid_eay = uuid4()
@@ -690,6 +691,9 @@ class DescargueVagonetas(wx.Frame):
         self.cargar_valores_de_inicializacion()
 
         # Connect Events
+        #self.grid_descargue_vagonetas
+        self.grid_descargue_vagonetas.Bind(wx.grid.EVT_GRID_CELL_LEFT_DCLICK, self.grid_descargue_vagonetasOnGridCellLeftDClick)
+
         self.comboBox_turno.Bind(wx.EVT_LEFT_DOWN, self.comboBox_turnoOnLeftDown)
         # self.comboBox_producto.Bind(wx.EVT_LEFT_DOWN, self.comboBox_productoOnLeftDown)
         # self.comboBox_vagoneta.Bind(wx.EVT_LEFT_DOWN, self.comboBox_vagonetaOnLeftDown)
@@ -733,6 +737,37 @@ class DescargueVagonetas(wx.Frame):
         pass
 
     # Virtual event handlers, overide them in your derived class
+    def grid_descargue_vagonetasOnGridCellLeftDClick(self, event):
+        fila = event.GetRow()
+        columna = event.GetCol()
+        if columna == 1:
+            vagoneta = self.grid_descargue_vagonetas.GetCellValue(fila, 1)
+
+            try:
+                fechaBusqueda = self.dic_vagonetas_fechas[vagoneta]
+                cad_sql = """
+                                    SELECT det.vagoneta, det.id_producto, det.producto, det.unidades_producto, cab.fecha_inicio,  cab.turno
+                                    FROM detalle_cargue_vagonetas as det, cabecera_proceso_ecd as cab
+                                    WHERE cab.uuid = det.uuid  and  det.vagoneta = '{0}'  and cab.fecha_inicio = '{1}'      
+                        """.format(vagoneta, fechaBusqueda)
+                rows = Ejecutar_SQL.select_varios_registros(cad_sql, 'grid_resultado_busquedaOnGridCellLeftDClick', 500,
+                                                            BasesDeDatos.DB_PRINCIPAL)
+
+                import \
+                    formEAY.formularios.frm_procesos.frm_detalle_cargue_vagoneta_individual as frm_detalle_cargue_vagoneta_individual
+                frame_detalle_cargue_vagoneta_individual = frm_detalle_cargue_vagoneta_individual.DetalleCargueVagoneta(
+                    self, rows)
+                frame_detalle_cargue_vagoneta_individual.Center()
+                frame_detalle_cargue_vagoneta_individual.Show()
+            except:
+                mensaje = u'No temenos información relacionada con la vagoneta ' + vagoneta
+                wx.MessageBox(mensaje, u'Atención',
+                              wx.OK | wx.ICON_INFORMATION)
+        event.Skip()
+
+
+
+
 
     def btn_guardarOnButtonClick(self, event):
 
@@ -818,12 +853,21 @@ class DescargueVagonetas(wx.Frame):
 
         self.btn_guardar.Hide()
 
+        cant_segundos = ManejoFechasHoras.cantidadSegundosEntre2Fechas(self.datePicker_fecha_inicio_cargue,
+                                                                       self.datePicker_fecha_fin,
+                                                                       self.timePicker_hora_inicio_cargue,
+                                                                       self.timePicker_hora_fin_cargue)
+
+        minutos_jornada = cant_segundos / 60
+        minutos_receso, minutos_novedades = self.func_calcular_tiempos()
+
         self.lbl_estado_guardar.SetLabel('1/7  Estamos guardando, el proceso puede tardar unos segundos...')
         rta_cabecera = DbInsertVarios.cabeceraProcesoECD(self.uuid_eay, self.usuario, self.dir_mac, fecha_transacccion,
                                                          hora_transacion, id_turno, el_turno,
                                                          total_vagonetas_grid, total_unidades_grid, fecha_inicio, hora_inicio,
                                                          fecha_fin,
-                                                         hora_fin, activo, self.AREA_PRODUCCION)
+                                                         hora_fin, activo, self.AREA_PRODUCCION,
+                                                         minutos_jornada, minutos_receso, minutos_novedades)
 
         self.lbl_estado_guardar.SetLabel('2/7  Estamos guardando, el proceso puede tardar unos segundos...')
         rta_insert_empleados = DbInsertVarios.personal(self)
@@ -894,6 +938,14 @@ class DescargueVagonetas(wx.Frame):
 
         self.timePicker_hora_inicio_cargue.SetTime(h1.hour, h1.minute, h1.second)
         self.timePicker_hora_fin_cargue.SetTime(h2.hour, h2.minute, h2.second)
+
+        fecha_inicio = self.datePicker_fecha_inicio_cargue.GetValue()
+
+
+
+
+
+
         event.Skip()
 
     def btn_a_lista_notasOnButtonClick(self, event):
@@ -954,7 +1006,9 @@ class DescargueVagonetas(wx.Frame):
 
     def btn_a_lista_cargue_vagonetasOnButtonClick(self, event):
         import formEAY.formularios.frm_procesos.frm_llenar_tabla_descargue_vagonetas as frm_llenar_tabla_descargue_vagonetas
-        frame_llenar_tabla_descargueVagonetas = frm_llenar_tabla_descargue_vagonetas.LlenarTablaDescargueVagonetas(self)
+        frame_llenar_tabla_descargueVagonetas = frm_llenar_tabla_descargue_vagonetas.LlenarTablaDescargueVagonetas(self,
+                                                                                                                   self.lista_empleados,
+                                                                                                                   self.dic_vagonetas_fechas)
         frame_llenar_tabla_descargueVagonetas.Center()
         frame_llenar_tabla_descargueVagonetas.Show()
         event.Skip()
@@ -1036,6 +1090,58 @@ class DescargueVagonetas(wx.Frame):
 
 
     ##  FUNCIONES EAY
+    def func_cargar_diccionario_vagonetas_ultima_fecha(self):
+        cad_sql = """
+                    SELECT det.vagoneta,    max(cab.fecha_inicio)
+                    FROM detalle_cargue_vagonetas as det, cabecera_proceso_ecd as cab
+                    WHERE cab.uuid = det.uuid and cab.activo='TRUE'
+                    GROUP BY det.vagoneta
+                    ORDER BY det.vagoneta
+        """
+        rows = Ejecutar_SQL.select_varios_registros(cad_sql, 'func_cargar_diccionario_vagonetas_ultima_fecha', 500, BasesDeDatos.DB_PRINCIPAL)
+
+        self.dic_vagonetas_fechas = ManipularRows.crearDiccionario(rows, 0, 1)
+
+
+
+    def func_calcular_tiempos(self):
+        minutos_recesos = 0
+        minutos_novedades = 0
+        filas_recesos = self.grid_recesos.GetNumberRows()
+        for i in range(filas_recesos):
+            minutos_recesos += int(self.grid_recesos.GetCellValue(i, 2))
+
+        filas_novedades = self.grid_novedades.GetNumberRows()
+        for i in range(filas_novedades):
+            minutos_novedades += int(self.grid_novedades.GetCellValue(i, 2))
+
+        return(minutos_recesos, minutos_novedades)
+
+    def cargar_valores_de_inicializacion(self):
+
+        self.txt_total_vagonetas.Hide()
+        self.txt_total_unidades.Hide()
+        self.lbl_etq_total_unidades.Hide()
+        self.lbl_etq_total_vagonetas.Hide()
+
+        self.txt_tiempo_parada_minutos.SetMaxLength(4)
+
+        self.puntero_fila_cargue_vagonetas = 0
+        self.puntero_fila_notas = 0
+        self.puntero_fila_novedades = 0
+
+        self.cargar_checkList_personal()
+
+        self.limpiar_todas_las_grillas()
+
+        self.set_configuracion_grillas()
+        self.set_configuracion_botones()
+
+        self.func_cargar_diccionario_vagonetas_ultima_fecha()
+
+
+
+
     def func_actualizar_stock_productos(self):
 
         rows = self.func_crear_datafreme_producto()
@@ -1085,7 +1191,7 @@ class DescargueVagonetas(wx.Frame):
         rango_rotos = range(2, cant_filas, 3)
 
 
-        for j in range(2, cant_cols):
+        for j in range(3, cant_cols):
             nom_producto = self.grid_descargue_vagonetas.GetColLabelValue(j)
             id_producto = self.dic_productos_id[nom_producto]
             cant_primera = 0
@@ -1124,19 +1230,19 @@ class DescargueVagonetas(wx.Frame):
 
         ManipularGrillas.setColumnasSoloNumeros(self.grid_descargue_vagonetas, list_columnas_soloNumeros)
 
-        list_columnas = [0]
+        list_columnas = [0, 1, 2]
         ManipularGrillas.setColumnasSoloLectura(self.grid_descargue_vagonetas, list_columnas)
 
         dic_color = {0: COLOR_RESALTE1}
         ManipularGrillas.setColorFondoCeldaGrilla(self.grid_descargue_vagonetas, dic_color)
 
-        dic_color = {0: wx.Colour(240, 240, 240), 1: wx.Colour(240, 240, 240)}
+        dic_color = {0: wx.Colour(240, 240, 240), 1: wx.Colour(240, 240, 240), 2: wx.Colour(240, 240, 240)}
         ManipularGrillas.setColorFondoCeldaGrilla(self.grid_descargue_vagonetas, dic_color)
 
         self.fusionar_celdas_columna_vagoneta()
         self.colorear_filas_intercaladas()
 
-        list_columnas = [0, 1]
+        list_columnas = [0, 1, 2]
         ManipularGrillas.setColumnasSoloLectura(self.grid_descargue_vagonetas, list_columnas)
 
         self.grid_descargue_vagonetas.AutoSizeColumns()
@@ -1145,7 +1251,7 @@ class DescargueVagonetas(wx.Frame):
         can_filas = self.grid_descargue_vagonetas.GetNumberRows()
         cant_cols = self.grid_descargue_vagonetas.GetNumberCols()
         for i in range(3, can_filas, 6):
-            for j in range(2, cant_cols):
+            for j in range(3, cant_cols):
                 self.grid_descargue_vagonetas.SetCellBackgroundColour(i, j, COLOR_RESALTE2)
                 self.grid_descargue_vagonetas.SetCellBackgroundColour(i+1, j, COLOR_RESALTE2)
                 self.grid_descargue_vagonetas.SetCellBackgroundColour(i+2, j, COLOR_RESALTE2)
@@ -1154,29 +1260,8 @@ class DescargueVagonetas(wx.Frame):
         can_filas = self.grid_descargue_vagonetas.GetNumberRows()
         for i in range(0, can_filas, 3):
             self.grid_descargue_vagonetas.SetCellSize(i, 0, 3, 1)
+            self.grid_descargue_vagonetas.SetCellSize(i, 1, 3, 1)
 
-    def cargar_valores_de_inicializacion(self):
-        #
-        # self.txt_total_vagonetas.SetMaxLength(6)
-        # self.txt_total_unidades.SetMaxLength(8)
-
-        self.txt_total_vagonetas.Hide()
-        self.txt_total_unidades.Hide()
-        self.lbl_etq_total_unidades.Hide()
-        self.lbl_etq_total_vagonetas.Hide()
-
-        self.txt_tiempo_parada_minutos.SetMaxLength(4)
-
-        self.puntero_fila_cargue_vagonetas = 0
-        self.puntero_fila_notas = 0
-        self.puntero_fila_novedades = 0
-
-        self.cargar_checkList_personal()
-
-        self.limpiar_todas_las_grillas()
-
-        self.set_configuracion_grillas()
-        self.set_configuracion_botones()
 
     def set_configuracion_botones(self):
         from formEAY.constantesCAC.coloresCAC import Colors_botones
@@ -1307,9 +1392,9 @@ class DescargueVagonetas(wx.Frame):
         rows = Get_empleados.lista_basica(AREA_PRODUCCION)
 
         if rows != None:
-            la_lista = ManipularRows.crearListaValores(rows, 1)
+            self.lista_empleados = ManipularRows.crearListaValores(rows, 1)
             self.diccionario_personal = ManipularRows.crearDiccionario(rows, 1, 0)
-            self.checkList_personal.Set(la_lista)
+            self.checkList_personal.Set(self.lista_empleados)
 
     def calcular_totales_grilla_descargue_vagonetas(self):
         """
@@ -1321,7 +1406,7 @@ class DescargueVagonetas(wx.Frame):
 
         total_unidades = 0
         for i in range(cant_filas):
-            for j in range(2, cant_cols):
+            for j in range(3, cant_cols):
                 dato = self.grid_descargue_vagonetas.GetCellValue(i, j)
                 if dato == '':
                     dato = 0
@@ -1338,5 +1423,6 @@ class DescargueVagonetas(wx.Frame):
         total_vagonetas = len(conjunto)
 
         return total_vagonetas, total_unidades
+
 
 

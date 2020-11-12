@@ -202,6 +202,45 @@ class GestionarProductos(wx.Frame):
 
         bSizer33.Add(self.txt_stock_maximo, 1, wx.ALL, 5)
 
+        ## ************************************************
+        self.lbl_etq_unid_coche = wx.StaticText(self.m_panel3, wx.ID_ANY, u"Unid / coche:", wx.DefaultPosition,
+                                                   wx.Size(-1, -1), wx.ALIGN_RIGHT)
+        self.lbl_etq_unid_coche.Wrap(-1)
+        bSizer33.Add(self.lbl_etq_unid_coche, 0, wx.ALL, 5)
+
+        self.txt_unid_x_coche = wx.TextCtrl(self.m_panel3, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition,
+                                               wx.Size(-1, -1), validator=validador_solo_digitos())
+        self.txt_unid_x_coche.SetMinSize(wx.Size(60, -1))
+
+        bSizer33.Add(self.txt_unid_x_coche, 1, wx.ALL, 5)
+
+        self.lbl_etq_unid_estiba = wx.StaticText(self.m_panel3, wx.ID_ANY, u"Unid / Estiba:", wx.DefaultPosition,
+                                                wx.Size(-1, -1), wx.ALIGN_RIGHT)
+        self.lbl_etq_unid_estiba.Wrap(-1)
+        bSizer33.Add(self.lbl_etq_unid_estiba, 0, wx.ALL, 5)
+
+        self.txt_unid_x_estiba = wx.TextCtrl(self.m_panel3, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition,
+                                            wx.Size(-1, -1), validator=validador_solo_digitos())
+        self.txt_unid_x_estiba.SetMinSize(wx.Size(60, -1))
+
+        bSizer33.Add(self.txt_unid_x_estiba, 1, wx.ALL, 5)
+
+
+        ## ________________________________________________
+        self.lbl_etq_unid_vagoneta = wx.StaticText(self.m_panel3, wx.ID_ANY, u"Unid / Vagoneta:", wx.DefaultPosition,
+                                                  wx.Size(-1, -1), wx.ALIGN_RIGHT)
+        self.lbl_etq_unid_vagoneta.Wrap(-1)
+        bSizer33.Add(self.lbl_etq_unid_vagoneta, 0, wx.ALL, 5)
+
+        self.txt_unid_x_vagoneta = wx.TextCtrl(self.m_panel3, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition,
+                                            wx.Size(-1, -1), validator=validador_solo_digitos())
+        self.txt_unid_x_vagoneta.SetMinSize(wx.Size(60, -1))
+
+        bSizer33.Add(self.txt_unid_x_vagoneta, 1, wx.ALL, 5)
+
+
+        ## _________________________________________________
+
 
 
         bSizer_principal.Add(bSizer33, 0, wx.EXPAND, 5)
@@ -209,7 +248,7 @@ class GestionarProductos(wx.Frame):
         self.grid_productos = wx.grid.Grid(self.m_panel3, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, 0)
 
         # Grid
-        self.grid_productos.CreateGrid(0, 10)
+        self.grid_productos.CreateGrid(0, 13)
         self.grid_productos.EnableEditing(False)
         self.grid_productos.EnableGridLines(True)
         self.grid_productos.EnableDragGridSize(False)
@@ -229,7 +268,10 @@ class GestionarProductos(wx.Frame):
         self.grid_productos.SetColLabelValue(6, u"Alto")
         self.grid_productos.SetColLabelValue(7, u"Stock Min")
         self.grid_productos.SetColLabelValue(8, u"Stock Max")
-        self.grid_productos.SetColLabelValue(9, u"Activo")
+        self.grid_productos.SetColLabelValue(9, u"Unid / Vagoneta")
+        self.grid_productos.SetColLabelValue(10, u"Unid / Coche")
+        self.grid_productos.SetColLabelValue(11, u"Unid / Estiba")
+        self.grid_productos.SetColLabelValue(12, u"Activo")
         self.grid_productos.SetColLabelAlignment(wx.ALIGN_CENTRE, wx.ALIGN_CENTRE)
 
         # Rows
@@ -330,6 +372,10 @@ class GestionarProductos(wx.Frame):
         self.txt_alto.SetValue(self.grid_productos.GetCellValue(fila, 6))
         self.txt_stock_minimo.SetValue(self.grid_productos.GetCellValue(fila, 7))
         self.txt_stock_maximo.SetValue(self.grid_productos.GetCellValue(fila, 8))
+        self.txt_unid_x_vagoneta.SetValue(self.grid_productos.GetCellValue(fila, 9))
+
+        self.txt_unid_x_coche.SetValue(self.grid_productos.GetCellValue(fila, 10))
+        self.txt_unid_x_estiba.SetValue(self.grid_productos.GetCellValue(fila, 11))
 
         if self.grid_productos.GetCellValue(fila, 9) == 'True':
             is_activo = 1
@@ -366,15 +412,20 @@ class GestionarProductos(wx.Frame):
         stock_minimo = self.txt_stock_minimo.GetValue()
         stock_maximo = self.txt_stock_maximo.GetValue()
         categoria   = self.comboBox_categoria.GetValue()
+        unid_x_vagoneta = self.txt_unid_x_vagoneta.GetValue()
+
+        unid_x_coche = self.txt_unid_x_coche.GetValue()
+        unid_x_estiba = self.txt_unid_x_estiba.GetValue()
 
         activo =  True  #self.checkBox_activo.GetValue()
 
         sSql = """
-                INSERT INTO producto (nom_producto,  Peso,  Largo,  Ancho,  Alto,  Stock_min,  Stock_max,  categoria) 
+                INSERT INTO producto (  nom_producto,  Peso,  Largo,  Ancho,  Alto,  Stock_min,  Stock_max,  categoria, 
+                                        unid_x_vagoneta, unid_coche, unid_estiba) 
                                 VALUES (
-                                '{0}', {1}, {2}, {3}, {4}, {5}, {6}, '{7}'                                
+                                '{0}', {1}, {2}, {3}, {4}, {5}, {6}, '{7}', {8}, {9}, {10}                                
                                 )
-        """.format(producto, peso, largo, ancho, alto,  stock_minimo, stock_maximo,  categoria)
+        """.format(producto, peso, largo, ancho, alto,  stock_minimo, stock_maximo,  categoria, unid_x_vagoneta, unid_x_coche, unid_x_estiba)
 
         rta = Ejecutar_SQL.insert_filas(sSql.upper(),'frm_gestionar_productos/func_guardar_nuevo_producto', BasesDeDatos.DB_PRINCIPAL)
         return  rta
@@ -389,16 +440,20 @@ class GestionarProductos(wx.Frame):
         stock_minimo = self.txt_stock_minimo.GetValue()
         stock_maximo = self.txt_stock_maximo.GetValue()
         categoria = self.comboBox_categoria.GetValue()
+        unid_x_vagoneta = self.txt_unid_x_vagoneta.GetValue()
+
+        unid_x_coche = self.txt_unid_x_coche.GetValue()
+        unid_x_estiba = self.txt_unid_x_estiba.GetValue()
 
         activo = self.checkBox_activo.GetValue()
 
         sSql = """
                     UPDATE producto SET 
                         nom_producto = '{0}',  Peso = {1},  Largo = {2},  Ancho = {3},  Alto = {4},  Stock_min = {5},  
-                        Stock_max = {6},  activo = '{7}',categoria = '{9}'
+                        Stock_max = {6},  activo = '{7}',categoria = '{9}', unid_x_vagoneta = {10}, unid_x_coche = {11}, unid_x_estiba = {12}
                     WHERE id_producto = {8}
                 """.format(producto, peso, largo, ancho, alto, stock_minimo, stock_maximo,
-                           activo, id_producto, categoria)
+                           activo, id_producto, categoria, unid_x_vagoneta, unid_x_coche, unid_x_estiba)
 
         rta = Ejecutar_SQL.update_filas(sSql.upper(), 'frm_gestionar_productos/func_actualizar_producto', BasesDeDatos.DB_PRINCIPAL)
         return rta
@@ -414,6 +469,11 @@ class GestionarProductos(wx.Frame):
         self.txt_alto.SetValue('')
         self.txt_stock_minimo.SetValue('')
         self.txt_stock_maximo.SetValue('')
+        self.txt_unid_x_vagoneta.SetValue('')
+
+        self.txt_unid_x_coche.SetValue('')
+        self.txt_unid_x_estiba.SetValue('')
+
         self.checkBox_activo.SetValue(is_activo)
 
         self.comboBox_categoria.SetSelection(-1)
@@ -430,12 +490,14 @@ class GestionarProductos(wx.Frame):
         dic_sel_carga = {'ACTIVOS': ' WHERE activo = True', 'NO ACTIVOS': ' WHERE activo = False', 'TODOS': ' '}
 
         sSql = """
-                SELECT id_producto,  nom_producto, categoria,  Peso,  Largo,  Ancho,  Alto,  Stock_min,  Stock_max,  Activo
+                SELECT id_producto,  nom_producto, categoria,  Peso,  Largo,  Ancho,  Alto,  Stock_min,  Stock_max, 
+                        unid_x_vagoneta, unid_x_coche, unid_x_estiba, Activo
                 FROM producto
                 {0}
         """.format(dic_sel_carga[opcion_carga])
 
-        cabeceras = ['id_producto','Categoria', 'Producto', 'Peso', 'Largo', 'Ancho', 'Alto', 'Stock Min', 'Stock Max', 'Activo']
+        cabeceras = ['id_producto','Categoria', 'Producto', 'Peso', 'Largo', 'Ancho', 'Alto', 'Stock Min', 'Stock Max',
+                     'Unid / Vagoneta', 'Unid / Coche', 'Unid / Estiba',  'Activo']
 
         rows = Ejecutar_SQL.select_varios_registros(sSql,  'frm_gestionarproductos/func_cargar_grilla_productos', 500, BasesDeDatos.DB_PRINCIPAL)
 
@@ -445,7 +507,7 @@ class GestionarProductos(wx.Frame):
 
         self.columna = columna
 
-        lista_tipoColumna = ['int', 'str', 'str', 'int', 'float', 'float', 'float', 'int', 'int', 'str']
+        lista_tipoColumna = ['int', 'str', 'str', 'int', 'float', 'float', 'float', 'int', 'int', 'int', 'int', 'int', 'str']
 
         ManipularGrillas.ordenarGrillaPorColumna(self.grid_productos,  self.columna, lista_tipoColumna,
                                                  orden_ascendente)
@@ -492,6 +554,12 @@ class GestionarProductos(wx.Frame):
             stock_maximo = int(self.txt_stock_maximo.GetValue())
         except:
             wx.MessageBox(u'Debes ingresar un valor entero para el Stock Máximo', u'Atención',
+                          wx.OK | wx.ICON_INFORMATION)
+            return 0
+        try:
+            unid_x_vagoneta = int(self.txt_unid_x_vagoneta.GetValue())
+        except:
+            wx.MessageBox(u'Debes ingresar un valor de Unidades por vagoneta', u'Atención',
                           wx.OK | wx.ICON_INFORMATION)
             return 0
 

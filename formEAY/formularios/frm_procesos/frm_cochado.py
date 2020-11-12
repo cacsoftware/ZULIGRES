@@ -17,6 +17,7 @@ from pyeay.formato import FormatearNumeros
 from pyeay.grillas import ManipularGrillas
 from pyeay.rows import ManipularRows
 from pyeay.validator import validador_solo_digitos
+from pyeay.fechasHoras import ManejoFechasHoras
 
 from formEAY.constantesCAC.coloresCAC import ColorsFondoCellGrilla
 from formEAY.constantesCAC.constantesCAC import AreasProduccion
@@ -222,9 +223,9 @@ class Cochado(wx.Frame):
 										wx.Size(45, -1),  validator=validador_solo_digitos())
 		bSizer141.Add(self.txt_rotura, 0, wx.ALL, 5)
 
-		self.btn_a_lista_extrusion = wx.Button(self.panel1_extrusion, wx.ID_ANY, u"--> Lista", wx.DefaultPosition,
+		self.btn_a_lista_cochado = wx.Button(self.panel1_extrusion, wx.ID_ANY, u"--> Lista", wx.DefaultPosition,
 											   wx.DefaultSize, 0)
-		bSizer141.Add(self.btn_a_lista_extrusion, 0, wx.ALL, 5)
+		bSizer141.Add(self.btn_a_lista_cochado, 0, wx.ALL, 5)
 
 		bSizer_panel_extrusion.Add(bSizer141, 0, wx.EXPAND, 5)
 
@@ -757,7 +758,9 @@ class Cochado(wx.Frame):
 		self.comboBox_turno.Bind(wx.EVT_COMBOBOX, self.comboBox_turnoOnCombobox)
 		self.comboBox_turno.Bind(wx.EVT_LEFT_DOWN, self.comboBox_turnoOnLeftDown)
 		self.comboBox_producto.Bind(wx.EVT_LEFT_DOWN, self.comboBox_productoOnLeftDown)
-		self.btn_a_lista_extrusion.Bind(wx.EVT_BUTTON, self.btn_a_lista_extrusionOnButtonClick)
+		self.comboBox_producto.Bind(wx.EVT_COMBOBOX, self.comboBox_productoOnCombobox)
+
+		self.btn_a_lista_cochado.Bind(wx.EVT_BUTTON, self.btn_a_lista_cochadoOnButtonClick)
 		self.bpButton_eliminar_item_seleccionado_grid_extrusion.Bind(wx.EVT_BUTTON,
 																	 self.bpButton_eliminar_item_seleccionado_grid_extrusionOnButtonClick)
 		self.bpButton_deseleccionar_todo_grid_extrusion.Bind(wx.EVT_BUTTON,
@@ -790,27 +793,20 @@ class Cochado(wx.Frame):
 	# Virtual event handlers, overide them in your derived class
 	def comboBox_tipoSecaderoOnCombobox(self, event):
 		tipo_secadero= self.comboBox_tipoSecadero.GetValue()
+		nom_producto = self.comboBox_producto.GetValue()
 		if tipo_secadero == 'SECADERO 3':
 			self.lbl_etq_parrilla.Show()
 			self.txt_unidades_parrila.Show()
 			self.lbl_etq_cant_coches.SetLabel('Cant Coches')
 			self.lbl_etq_u_x_coche.SetLabel('U x Coche')
-
-			# lista_cabeceras = ['id', 'Producto', 'Cant Coches', 'U x Coche', 'U x Parrilla',  'Total', 'Rotura', 'Sel']
-			# ManipularGrillas.setCabecerasGrilla(self.grid_extrusion, lista_cabeceras)
-			# self.grid_extrusion.ShowCol(4)
-
+			unid_por_estiba_coche = str(self.dic_productos[nom_producto][3])  # coches
 		else:
 			self.lbl_etq_parrilla.Hide()
 			self.txt_unidades_parrila.Hide()
 			self.lbl_etq_cant_coches.SetLabel('Cant Estibas')
 			self.lbl_etq_u_x_coche.SetLabel('U x Estiba')
-
-			self.txt_unidades_parrila.SetValue('0')
-
-			# lista_cabeceras = ['id', 'Producto', 'Cant Estibas', 'U x Estiba', 'U x Parrilla', 'Total', 'Rotura', 'Sel']
-			# ManipularGrillas.setCabecerasGrilla(self.grid_extrusion, lista_cabeceras)
-			# self.grid_extrusion.HideCol(4)
+			unid_por_estiba_coche = str(self.dic_productos[nom_producto][4])  # estibas
+		self.txt_unidades_x_coche.SetValue(unid_por_estiba_coche)
 		self.Layout()
 
 		event.Skip()
@@ -837,6 +833,18 @@ class Cochado(wx.Frame):
 		if self.comboBox_producto.GetItems() == []:
 			self.cargar_combo_productos()
 		event.Skip()
+
+	def comboBox_productoOnCombobox(self, event):
+		nom_producto = self.comboBox_producto.GetValue()
+		if self.comboBox_tipoSecadero.GetValue() == 'SECADERO 3':
+			unid_por_estiba_coche = str(self.dic_productos[nom_producto][3])  # coches
+		else:
+			unid_por_estiba_coche = str(self.dic_productos[nom_producto][4])  # estibas
+		self.txt_unidades_x_coche.SetValue(unid_por_estiba_coche)
+		self.txt_cant_coches.SetValue('0')
+		self.txt_rotura.SetValue('0')
+		event.Skip()
+
 
 	def btn_a_lista_novedadesOnButtonClick(self, event):
 		formato_numeros = FormatearNumeros()
@@ -866,13 +874,13 @@ class Cochado(wx.Frame):
 																	   self.puntero_fila_novedades)
 		event.Skip()
 
-	def btn_a_lista_extrusionOnButtonClick(self, event):
+	def btn_a_lista_cochadoOnButtonClick(self, event):
 		formato_numeros = FormatearNumeros()
 
 		producto = self.comboBox_producto.GetValue()
 
 		try:
-			id_producto = self.dic_extrusion[producto]
+			id_producto = self.dic_productos[producto][0]
 		except:
 			return 0
 
@@ -881,6 +889,9 @@ class Cochado(wx.Frame):
 		unidades_parrila = self.txt_unidades_parrila.GetValue()
 		unidades_rotura = self.txt_rotura.GetValue()
 		secadero = self.comboBox_tipoSecadero.GetValue()
+
+		if secadero != 'SECADERO 3':
+			unidades_parrila = 0
 
 		total = (int(cant_coches) * int(unidades_x_coche)) - int(unidades_parrila)
 		total = str(total)
@@ -1076,12 +1087,25 @@ class Cochado(wx.Frame):
 
 		self.btn_guardar.Hide()
 
+
+		cant_segundos = ManejoFechasHoras.cantidadSegundosEntre2Fechas(self.datePicker_fecha_inicio_extrusion,
+																	   self.datePicker_fecha_fin,
+																	   self.timePicker_hora_inicio_extrusion,
+																	   self.timePicker_hora_fin_extrusion)
+
+		minutos_jornada = cant_segundos / 60
+		minutos_receso, minutos_novedades = self.func_calcular_tiempos()
+
+
+
+
 		self.lbl_estado_guardar.SetLabel('1/7  Estamos guardando, el procesos puede tardar unos segundos...')
 		rta_cabecera = DbInsertVarios.cabeceraProcesoECD(self.uuid_eay, self.usuario, self.dir_mac, fecha_transacccion,
 														 hora_transacion, id_turno, el_turno,
 														 total_coches_grid, total_unidades_grid, fecha_inicio,
 														 hora_inicio, fecha_fin,
-														 hora_fin, activo, self.AREA_PRODUCCION)
+														 hora_fin, activo, self.AREA_PRODUCCION,
+                                                         minutos_jornada, minutos_receso, minutos_novedades)
 
 		self.lbl_estado_guardar.SetLabel('2/7  Estamos guardando, el proceso puede tardar unos segundos...')
 
@@ -1118,6 +1142,18 @@ class Cochado(wx.Frame):
 		event.Skip()
 
 	##FUNCIONES EAY
+	def func_calcular_tiempos(self):
+		minutos_recesos = 0
+		minutos_novedades = 0
+		filas_recesos = self.grid_recesos.GetNumberRows()
+		for i in range(filas_recesos):
+			minutos_recesos += int(self.grid_recesos.GetCellValue(i, 2))
+
+		filas_novedades = self.grid_novedades.GetNumberRows()
+		for i in range(filas_novedades):
+			minutos_novedades += int(self.grid_novedades.GetCellValue(i, 2))
+
+		return (minutos_recesos, minutos_novedades)
 
 	def cargar_valores_de_inicializacion(self):
 
@@ -1223,13 +1259,13 @@ class Cochado(wx.Frame):
 		self.btn_guardar.SetForegroundColour(wx.WHITE)  # wx.Colour(66, 106, 45)
 		self.btn_guardar.SetFont(wx.Font(9, wx.SWISS, wx.NORMAL, wx.BOLD))
 
-		self.btn_a_lista_extrusion.SetBackgroundColour(colors_botones.AGREGAR_A_LISTA)
+		self.btn_a_lista_cochado.SetBackgroundColour(colors_botones.AGREGAR_A_LISTA)
 		self.btn_a_lista_notas.SetBackgroundColour(colors_botones.AGREGAR_A_LISTA)
 		self.btn_a_lista_novedades.SetBackgroundColour(colors_botones.AGREGAR_A_LISTA)
 		#self.btn_a_lista_boquilla.SetBackgroundColour(colors_botones.AGREGAR_A_LISTA)
 
 		self.btn_guardar.SetWindowStyleFlag(wx.NO_BORDER)
-		self.btn_a_lista_extrusion.SetWindowStyleFlag(wx.NO_BORDER)
+		self.btn_a_lista_cochado.SetWindowStyleFlag(wx.NO_BORDER)
 		self.btn_a_lista_notas.SetWindowStyleFlag(wx.NO_BORDER)
 		self.btn_a_lista_novedades.SetWindowStyleFlag(wx.NO_BORDER)
 		#self.btn_a_lista_boquilla.SetWindowStyleFlag(wx.NO_BORDER)
@@ -1281,7 +1317,7 @@ class Cochado(wx.Frame):
 
 		if rows != None:
 			la_lista = ManipularRows.crearListaValores(rows, 1)
-			self.dic_extrusion = ManipularRows.crearDiccionario(rows, 1, 0)
+			self.dic_productos = ManipularRows.crearDiccionarioTodosLosCampos(rows, 1)
 			self.comboBox_producto.Set(la_lista)
 
 	def cargar_combo_turnos(self):

@@ -75,8 +75,17 @@ class Principal(wx.Frame):
         self.btn_extrusion.SetFont(wx.Font(wx.NORMAL_FONT.GetPointSize(), 70, 90, 90, False, wx.EmptyString))
         self.btn_extrusion.SetForegroundColour(wx.Colour(255, 255, 255))
         self.btn_extrusion.SetBackgroundColour(wx.Colour(104, 182, 182))
-
         bSizer9.Add(self.btn_extrusion, 0, wx.ALL, 5)
+
+
+        self.btn_cochado = wx.Button(self.m_panel3, wx.ID_ANY, u"Cochado", wx.DefaultPosition,
+                                     wx.Size(180, -1),
+                                     wx.NO_BORDER)
+        self.btn_cochado.SetBackgroundColour(wx.Colour(187, 75, 123))
+        self.btn_cochado.SetForegroundColour(wx.Colour(255, 255, 255))
+
+        bSizer9.Add(self.btn_cochado, 0, wx.ALL, 5)
+
 
         self.btn_cargue_vagonetas = wx.Button(self.m_panel3, wx.ID_ANY, u"Cargue Vagonetas", wx.DefaultPosition,
                                               wx.Size(180, -1), wx.NO_BORDER)
@@ -93,13 +102,7 @@ class Principal(wx.Frame):
 
         bSizer9.Add(self.btn_descargue_vagonetas, 0, wx.ALL, 5)
 
-        self.btn_cochado = wx.Button(self.m_panel3, wx.ID_ANY, u"Cochado", wx.DefaultPosition,
-                                           wx.Size(180, -1),
-                                           wx.NO_BORDER)
-        self.btn_cochado.SetBackgroundColour(wx.Colour(187, 75, 123))
-        self.btn_cochado.SetForegroundColour(wx.Colour(255, 255, 255))
 
-        bSizer9.Add(self.btn_cochado, 0, wx.ALL, 5)
 
 
 

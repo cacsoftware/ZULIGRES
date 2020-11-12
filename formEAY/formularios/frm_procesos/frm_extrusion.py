@@ -39,7 +39,7 @@ class Extrusion(wx.Frame):
 
     def __init__(self, parent, usuario='usuario1', dir_mac = 'la dir mac del pc'):
         wx.Frame.__init__(self, parent, id=wx.ID_ANY, title=u"Registrar Extrusión", pos=wx.DefaultPosition,
-                          size=wx.Size(1040, 680), style=wx.DEFAULT_FRAME_STYLE | wx.TAB_TRAVERSAL)
+                          size=wx.Size(1140, 680), style=wx.DEFAULT_FRAME_STYLE | wx.TAB_TRAVERSAL)
         
         self.SetSizeHints(wx.Size(1040, 680), wx.DefaultSize)
         self.SetBackgroundColour(wx.Colour(240, 240, 240))
@@ -195,8 +195,8 @@ class Extrusion(wx.Frame):
 
         comboBox_cocheChoices = []
         self.comboBox_coche = wx.ComboBox(self.panel1_extrusion, wx.ID_ANY, u"Combo!", wx.DefaultPosition,
-                                          wx.DefaultSize, comboBox_cocheChoices, wx.CB_READONLY)
-        bSizer141.Add(self.comboBox_coche, 1, wx.ALL, 5)
+                                          wx.Size(110, -1), comboBox_cocheChoices, wx.CB_READONLY)
+        bSizer141.Add(self.comboBox_coche, 0, wx.ALL, 5)
 
 
         #_________________________________________________________________________________________________________
@@ -258,7 +258,7 @@ class Extrusion(wx.Frame):
         self.grid_extrusion = wx.grid.Grid(self.panel1_extrusion, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, 0)
 
         # Grid
-        self.grid_extrusion.CreateGrid(5, 6 )
+        self.grid_extrusion.CreateGrid(5, 9 )
         self.grid_extrusion.EnableEditing(True)
         self.grid_extrusion.EnableGridLines(True)
         self.grid_extrusion.EnableDragGridSize(False)
@@ -270,10 +270,13 @@ class Extrusion(wx.Frame):
         self.grid_extrusion.SetColLabelSize(30)
         self.grid_extrusion.SetColLabelValue(0, u"id")
         self.grid_extrusion.SetColLabelValue(1, u"Producto")
-        self.grid_extrusion.SetColLabelValue(2, u"Coche")
-        self.grid_extrusion.SetColLabelValue(3, u"Cant Coches")
-        self.grid_extrusion.SetColLabelValue(4, u"Unid Producto")
-        self.grid_extrusion.SetColLabelValue(5, u"Sel")
+        self.grid_extrusion.SetColLabelValue(2, u"Coche/Est")
+        self.grid_extrusion.SetColLabelValue(3, u"Cant Coches/Est")
+        self.grid_extrusion.SetColLabelValue(4, u"U x Coche/Est")
+        self.grid_extrusion.SetColLabelValue(5, u"U Parrillas Vacias")
+        self.grid_extrusion.SetColLabelValue(6, u"Total")
+        self.grid_extrusion.SetColLabelValue(7, u"Contador")
+        self.grid_extrusion.SetColLabelValue(8, u"Sel")
         self.grid_extrusion.SetColLabelAlignment(wx.ALIGN_CENTRE, wx.ALIGN_CENTRE)
 
         # Rows
@@ -802,6 +805,7 @@ class Extrusion(wx.Frame):
         # self.comboBox_boquillas.Bind(wx.EVT_LEFT_DOWN, self.comboBox_boquillasOnLeftDown)
         self.comboBox_turno.Bind(wx.EVT_LEFT_DOWN, self.comboBox_turnoOnLeftDown)
         self.comboBox_producto.Bind(wx.EVT_LEFT_DOWN, self.comboBox_productoOnLeftDown)
+        self.comboBox_producto.Bind(wx.EVT_COMBOBOX, self.comboBox_productoOnCombobox)
         self.comboBox_coche.Bind(wx.EVT_LEFT_DOWN, self.comboBox_cocheOnLeftDown)
         self.comboBox_coche.Bind(wx.EVT_COMBOBOX, self.comboBox_cocheOnCombobox)
         self.comboBox_relevancia_nota.Bind(wx.EVT_LEFT_DOWN, self.comboBox_relevancia_notaOnLeftDown)
@@ -858,17 +862,21 @@ class Extrusion(wx.Frame):
 
 
     def comboBox_cocheOnCombobox(self, event):
+        nom_producto = self.comboBox_producto.GetValue()
         tipo_coche = self.comboBox_coche.GetValue()
         if tipo_coche == 'ESTIBA':
             self.lbl_etq_cant_coches.SetLabel('Cant Estibas:')
             self.lbl_etq_x_coche.SetLabel('Unid x Estiba:')
             self.lbl_etq_u_x_parrilla_vacia.Hide()
             self.txt_unidades_x_parrillaVacia.Hide()
+            unid_por_estiba_coche = str(self.dic_productos[nom_producto][4])
         else:
             self.lbl_etq_cant_coches.SetLabel('Cant Coches:')
             self.lbl_etq_x_coche.SetLabel('Unid x Coche:')
             self.lbl_etq_u_x_parrilla_vacia.Show()
             self.txt_unidades_x_parrillaVacia.Show()
+            unid_por_estiba_coche = str(self.dic_productos[nom_producto][3])
+        self.txt_unidades_x_coche.SetValue(unid_por_estiba_coche)
         self.Layout()
         event.Skip()
 
@@ -878,6 +886,18 @@ class Extrusion(wx.Frame):
 
 
         event.Skip()
+
+    def comboBox_productoOnCombobox(self, event):
+        nom_producto = self.comboBox_producto.GetValue()
+        if self.comboBox_coche.GetValue() == 'ESTIBA':
+            unid_por_estiba_coche = str(self.dic_productos[nom_producto][4])
+        else:
+            unid_por_estiba_coche = str(self.dic_productos[nom_producto][3])
+        self.txt_unidades_x_coche.SetValue(unid_por_estiba_coche)
+        self.txt_contador.SetValue('0')
+        self.txt_cant_coches.SetValue('0')
+        event.Skip()
+
 
     def comboBox_productoOnLeftDown(self, event):
         if self.comboBox_producto.GetItems() == []:
@@ -909,7 +929,7 @@ class Extrusion(wx.Frame):
         self.timePicker_hora_inicio_extrusion.SetTime(h1.hour, h1.minute, h1.second)
         self.timePicker_hora_fin_extrusion.SetTime(h2.hour, h2.minute, h2.second)
         event.Skip()
-        
+
     def btn_a_lista_notasOnButtonClick(self, event):
         nota = self.txt_nota.GetValue()
         area = U'EXTRUSION'
@@ -947,6 +967,7 @@ class Extrusion(wx.Frame):
             wx.MessageBox(u'Debes ingresar un número valido para el tiempo de parada', u'Atención', wx.OK | wx.ICON_INFORMATION)
             return 0
 
+
         tiempo_parada = formato_numeros.toNumMilesSigno(tiempo_parada)
 
         la_fecha = self.datePicker_fecha_novedad.GetValue()
@@ -955,7 +976,6 @@ class Extrusion(wx.Frame):
         hora = la_hora.Format("%H:%M:%S")
 
         id_novedad = 25
-
         row = [fecha, hora, tiempo_parada, novedad]
         self.puntero_fila_novedades = ManipularGrillas.nuevaFilaGrilla(self.grid_novedades, row, self.puntero_fila_novedades)
         event.Skip()
@@ -966,100 +986,66 @@ class Extrusion(wx.Frame):
         producto = self.comboBox_producto.GetValue()
 
         try:
-            id_producto = self.dic_extrusion[producto]
+            id_producto = self.dic_productos[producto][0]
         except:
             return 0
 
         coche = self.comboBox_coche.GetValue()
         cant_coches = self.txt_cant_coches.GetValue()
         unidades_x_coche = self.txt_unidades_x_coche.GetValue()
+        unidades_parrillas_vacias = self.txt_unidades_x_parrillaVacia.GetValue()
+        contador = self.txt_contador.GetValue()
 
         if producto == '':
             wx.MessageBox(u'Debes seleccionar un Producto', u'Atención', wx.OK | wx.ICON_INFORMATION)
             return 0
         if coche == '':
-            wx.MessageBox(u'Debes seleccionar un tipo de coche', u'Atención', wx.OK | wx.ICON_INFORMATION)
+            wx.MessageBox(u'Debes seleccionar un tipo de Coche/Estiba', u'Atención', wx.OK | wx.ICON_INFORMATION)
             return 0
         if cant_coches == '' or cant_coches == '0':
-            wx.MessageBox(u'Debes ingresar un número valido de coches', u'Atención',  wx.OK | wx.ICON_INFORMATION)
+            if coche == 'ESTIBA':
+                wx.MessageBox(u'Debes ingresar un número valido de Estibas', u'Atención',  wx.OK | wx.ICON_INFORMATION)
+            else:
+                wx.MessageBox(u'Debes ingresar un número valido de coches', u'Atención',  wx.OK | wx.ICON_INFORMATION)
             return 0
         if unidades_x_coche == '' or unidades_x_coche == '0':
-            wx.MessageBox(u'Debes ingresar un número valido de unidades por coche', u'Atención',  wx.OK | wx.ICON_INFORMATION)
+            if coche == 'ESTIBA':
+                wx.MessageBox(u'Debes ingresar un número valido de unidades por Estiba', u'Atención',  wx.OK | wx.ICON_INFORMATION)
+            else:
+                wx.MessageBox(u'Debes ingresar un número valido de unidades por Coche', u'Atención',  wx.OK | wx.ICON_INFORMATION)
+            return 0
+        if unidades_parrillas_vacias == '' :
+            if coche == 'ESTIBA':
+                unidades_parrillas_vacias == '0'
+            else:
+                wx.MessageBox(u'Debes ingresar un número valido de unidades para las parrillas vacias', u'Atención',
+                              wx.OK | wx.ICON_INFORMATION)
+                return 0
+        if contador == '' :  # or contador == '0'
+            wx.MessageBox(u'Debes ingresar un número valido para el Contador', u'Atención',  wx.OK | wx.ICON_INFORMATION)
             return 0
 
         # cant_coches = formato_numeros.toNumMilesSigno(cant_coches, '')
         # unidades_x_coche = formato_numeros.toNumMilesSigno(unidades_x_coche, '')
 
-        row = [id_producto, producto, coche, cant_coches, unidades_x_coche]
+        if coche == 'ESTIBA':
+            unidades_parrillas_vacias = 0
+
+
+        total_unidades = (int(cant_coches) * int(unidades_x_coche)) - int(unidades_parrillas_vacias)
+
+        row = [id_producto, producto, coche, cant_coches, unidades_x_coche, unidades_parrillas_vacias, total_unidades, contador]
 
         self.puntero_fila_extrusion = ManipularGrillas.nuevaFilaGrilla(self.grid_extrusion, row, self.puntero_fila_extrusion)
 
-        dic_color = {4: COLOR_RESALTE1, 3: COLOR_RESALTE2}
+        dic_color = {6: COLOR_RESALTE1}
         ManipularGrillas.setColorFondoCeldaGrilla(self.grid_extrusion, dic_color)
 
         event.Skip()
 
-    def btn_a_lista_boquillaOnButtonClick(self, event):
-        formato_numeros = FormatearNumeros()
-
-
-
-        boquilla = self.comboBox_boquillas.GetValue()
-        id_boquilla = self.dic_boquillas[boquilla]
-        if boquilla == '':
-            wx.MessageBox(u'Debes seleccionar una Boquilla', u'Atención', wx.OK | wx.ICON_INFORMATION)
-            return 0
-
-        contador1 = self.txt_contador_1.GetValue()
-        contador2 = self.txt_contador_2.GetValue()
-
-        unidades_extruidas = int(contador2) - int(contador1)
-        if unidades_extruidas <= 0:
-            wx.MessageBox(u'El Contador 2 debe ser mayor que el Contador 1', u'Atención', wx.OK | wx.ICON_INFORMATION)
-            return 0
-
-        unidades_extruidas = int(contador2) - int(contador1)
-        unidades_extruidas = formato_numeros.toNumMilesSigno(unidades_extruidas, '')
-
-        if contador1 == '' or contador1 == '0':
-            wx.MessageBox(u'Debes un número valido para el contador 1', u'Atención',  wx.OK | wx.ICON_INFORMATION)
-            return 0
-        contador1 = formato_numeros.toNumMilesSigno(int(contador1), '')
-
-        if contador2 == '' or contador2 == '0':
-            wx.MessageBox(u'Debes un número valido para el contador 2', u'Atención', wx.OK | wx.ICON_INFORMATION)
-            return 0
-        contador2 = formato_numeros.toNumMilesSigno(int(contador2), '')
-
-        hora1 = self.timePicker_hora_1.GetValue()
-        hora2 = self.timePicker_hora_2.GetValue()
-
-        if hora1 > hora2:
-            wx.MessageBox(u'La Hora1 de extrusión debe ser mayor que la Hora2', u'Atención', wx.OK | wx.ICON_INFORMATION)
-            return 0
-
-        tiempo_operacion = hora2 - hora1
-        tiempo_operacion = tiempo_operacion.Format("%H:%M:%S")
-
-        hora1 = hora1.Format("%H:%M:%S")
-        hora2 = hora2.Format("%H:%M:%S")
-
-        row = [id_boquilla, boquilla, contador1, contador2, hora1, hora2, tiempo_operacion, unidades_extruidas]
-
-
-        self.puntero_fila_boquilla = ManipularGrillas.nuevaFilaGrilla(self.grid_boquilla, row,
-                                                                      self.puntero_fila_boquilla)
-
-
-        dic_color = {6: COLOR_RESALTE1, 7: COLOR_RESALTE2}
-        ManipularGrillas.setColorFondoCeldaGrilla(self.grid_boquilla, dic_color)
-
-        event.Skip()
-
-
 
     def bpButton_eliminar_item_seleccionado_grid_extrusionOnButtonClick(self, event):
-        col_verificacion = 5
+        col_verificacion = 8
         self.puntero_fila_extrusion = ManipularGrillas.delFilasCHK(self.grid_extrusion, col_verificacion)
 
         dic_color = {4: COLOR_RESALTE1, 3: COLOR_RESALTE2}
@@ -1067,12 +1053,12 @@ class Extrusion(wx.Frame):
 
         event.Skip()
 
-    def bpButton_eliminar_item_seleccionado_grid_novedadesOnButtonClick(self, event):            
+    def bpButton_eliminar_item_seleccionado_grid_novedadesOnButtonClick(self, event):
             col_verificacion = 4
             self.puntero_fila_novedades = ManipularGrillas.delFilasCHK(self.grid_novedades, col_verificacion)
             event.Skip()
 
-    def bpButton_eliminar_item_seleccionado_grid_notasOnButtonClick(self, event):        
+    def bpButton_eliminar_item_seleccionado_grid_notasOnButtonClick(self, event):
         col_verificacion = 4
         self.puntero_fila_notas = ManipularGrillas.delFilasCHK(self.grid_notas, col_verificacion)
         event.Skip()
@@ -1087,18 +1073,17 @@ class Extrusion(wx.Frame):
         event.Skip()
 
 
-
-    def bpButton_deseleccionar_todo_grid_extrusionOnButtonClick(self, event):        
-        col_verificacion = 5
+    def bpButton_deseleccionar_todo_grid_extrusionOnButtonClick(self, event):
+        col_verificacion = 8
         ManipularGrillas.deseleccionarFilasCHK(self.grid_extrusion, col_verificacion)
         event.Skip()
 
-    def bpButton_deseleccionar_todo_grid_novedadesOnButtonClick(self, event):        
+    def bpButton_deseleccionar_todo_grid_novedadesOnButtonClick(self, event):
         col_verificacion = 4
         ManipularGrillas.deseleccionarFilasCHK(self.grid_novedades, col_verificacion)
         event.Skip()
 
-    def bpButton_deseleccionar_todo_grid_notasOnButtonClick(self, event):        
+    def bpButton_deseleccionar_todo_grid_notasOnButtonClick(self, event):
         col_verificacion = 4
         ManipularGrillas.deseleccionarFilasCHK(self.grid_notas, col_verificacion)
         event.Skip()
@@ -1109,26 +1094,21 @@ class Extrusion(wx.Frame):
         event.Skip()
 
 
-
-
-
-    def bpButton_limpiar_grid_extrusionOnButtonClick(self, event):        
+    def bpButton_limpiar_grid_extrusionOnButtonClick(self, event):
         self.puntero_fila_extrusion = ManipularGrillas.limpiarGrilla(self.grid_extrusion)
         event.Skip()
 
-    def bpButton_limpiar_grid_notasOnButtonClick(self, event):        
+    def bpButton_limpiar_grid_notasOnButtonClick(self, event):
         self.puntero_fila_notas = ManipularGrillas.limpiarGrilla(self.grid_notas)
         event.Skip()
 
-    def bpButton_limpiar_grid_novedadesOnButtonClick(self, event):        
+    def bpButton_limpiar_grid_novedadesOnButtonClick(self, event):
         self.puntero_fila_novedades = ManipularGrillas.limpiarGrilla(self.grid_novedades)
         event.Skip()
 
     def bpButton_limpiar_grid_boquillaOnButtonClick(self, event):
         self.puntero_fila_boquilla = ManipularGrillas.limpiarGrilla(self.grid_boquilla)
         event.Skip()
-
-
 
 
     def grid_boquillaOnGridCellLeftClick(self, event):
@@ -1235,30 +1215,35 @@ class Extrusion(wx.Frame):
 
         self.btn_guardar.Hide()
 
-        self.lbl_estado_guardar.SetLabel('1/8  Estamos guardando, el procesos puede tardar unos segundos...')
+        cant_segundos = ManejoFechasHoras.cantidadSegundosEntre2Fechas(self.datePicker_fecha_inicio_extrusion, self.datePicker_fecha_fin,
+                                                                         self.timePicker_hora_inicio_extrusion, self.timePicker_hora_fin_extrusion)
+
+        minutos_jornada = cant_segundos / 60
+        minutos_receso, minutos_novedades = self.func_calcular_tiempos()
+
+        self.lbl_estado_guardar.SetLabel('1/7  Estamos guardando, el procesos puede tardar unos segundos...')
         rta_cabecera = DbInsertVarios.cabeceraProcesoECD(self.uuid_eay, self.usuario, self.dir_mac, fecha_transacccion,
                                                            hora_transacion, id_turno, el_turno,
-                                                           total_coches_grid, total_unidades_grid, fecha_inicio, hora_inicio, fecha_fin,
-                                                           hora_fin, activo, self.AREA_PRODUCCION)
+                                                           total_coches_grid, total_unidades_grid, fecha_inicio, hora_inicio,
+                                                            fecha_fin, hora_fin, activo, self.AREA_PRODUCCION,
+                                                         minutos_jornada, minutos_receso, minutos_novedades)
 
-        self.lbl_estado_guardar.SetLabel('2/8  Estamos guardando, el proceso puede tardar unos segundos...')
+        self.lbl_estado_guardar.SetLabel('2/7  Estamos guardando, el proceso puede tardar unos segundos...')
         rta_insert_DetalleExtrusion = DbInsertVarios.detalleExtrusion(self)
 
-        self.lbl_estado_guardar.SetLabel('3/8  Estamos guardando, el proceso puede tardar unos segundos...')
+        self.lbl_estado_guardar.SetLabel('3/7  Estamos guardando, el proceso puede tardar unos segundos...')
         rta_actualizar_stocks_productos = self.func_actualizar_stock_productos()
 
 
-        self.lbl_estado_guardar.SetLabel('4/8  Estamos guardando, el proceso puede tardar unos segundos...')
+        self.lbl_estado_guardar.SetLabel('4/7  Estamos guardando, el proceso puede tardar unos segundos...')
         rta_insert_empleados =  DbInsertVarios.personal(self)
 
-        self.lbl_estado_guardar.SetLabel('5/8  Estamos guardando, el proceso puede tardar unos segundos...')
+        self.lbl_estado_guardar.SetLabel('5/7  Estamos guardando, el proceso puede tardar unos segundos...')
         rta_insert_recesosProgramados = DbInsertVarios.recesosProgramados(self)
-        self.lbl_estado_guardar.SetLabel('6/8  Estamos guardando, el proceso puede tardar unos segundos...')
+        self.lbl_estado_guardar.SetLabel('6/7  Estamos guardando, el proceso puede tardar unos segundos...')
         rta_insert_novedades = DbInsertVarios.novedades(self)
-        self.lbl_estado_guardar.SetLabel('7/8  Estamos guardando, el proceso puede tardar unos segundos...')
+        self.lbl_estado_guardar.SetLabel('7/7  Estamos guardando, el proceso puede tardar unos segundos...')
         rta_insert_notas = DbInsertVarios.notas(self)
-        self.lbl_estado_guardar.SetLabel('8/8  Estamos guardando, el proceso puede tardar unos segundos...')
-        rta_insert_boquillas = self.guardar_listaBoquillas()
 
         self.lbl_estado_guardar.SetLabel('')
 
@@ -1273,6 +1258,20 @@ class Extrusion(wx.Frame):
 
 
 ##  FUNCIONES EAY
+    def func_calcular_tiempos(self):
+        minutos_recesos = 0
+        minutos_novedades = 0
+        filas_recesos = self.grid_recesos.GetNumberRows()
+        for i in range(filas_recesos):
+            minutos_recesos += int(self.grid_recesos.GetCellValue(i, 2))
+
+        filas_novedades = self.grid_novedades.GetNumberRows()
+        for i in range(filas_novedades):
+            minutos_novedades += int(self.grid_novedades.GetCellValue(i, 2))
+
+        return(minutos_recesos, minutos_novedades)
+
+
     def func_actualizar_stock_productos(self):
 
         rows = self.func_crear_datafreme_producto()
@@ -1312,46 +1311,6 @@ class Extrusion(wx.Frame):
 
         rows = df.to_records().tolist()
         return rows
-
-    def guardar_listaBoquillas(self):
-
-        nom_tabla = 'boquilla_extrusion'
-        dic_campos = {
-            'id_boquilla': 'int',
-            'boquilla': 'str',
-            'contador1': 'int',
-            'contador2': 'int',
-            'hora1': 'str',
-            'hora2': 'str',
-            'tiempo_extrusion': 'str',
-            'unidades': 'int',
-            'activo': 'str',
-            'uuid': 'str'
-        }
-
-        cant_filas = self.grid_boquilla.GetNumberRows()
-        cant_columnas = (self.grid_boquilla.GetNumberCols()) - 1  ## -1 Para no tener en cuenta la columna CHK
-        list_valores = []
-
-        if cant_filas < 1:
-            return 0
-
-        for i in range(cant_filas):
-            list_fila = []
-            for j in range(cant_columnas):
-                dato = self.grid_boquilla.GetCellValue(i, j)
-                list_fila.append(dato.upper())
-            list_fila.append(True)  # es para el campo Activo de la base de datos
-            list_fila.append(self.uuid_eay)
-
-            list_valores.append(list_fila)
-
-        sSql_insert_boquillas = GenerarSql.crearMultiInsertSql(nom_tabla, dic_campos, list_valores)
-
-        rta_insert_boquillas = Ejecutar_SQL.insert_filas(sSql_insert_boquillas, 'frm_extrusion_funcion_guardarBoquillas', BasesDeDatos.DB_PRINCIPAL)
-
-        return rta_insert_boquillas
-
 
     def cargar_valores_de_inicializacion(self):
         self.txt_total_coches.Hide()
@@ -1450,10 +1409,10 @@ class Extrusion(wx.Frame):
     #     ManipularGrillas.setColumnasFormatoCHK(self.grid_boquilla, list_columnas)
 
     def set_configuaracion_grilla_extrusion(self):
-        list_columnas = [0,1, 2 ]
+        list_columnas = [0,1, 2, 6]
         ManipularGrillas.setColumnasSoloLectura(self.grid_extrusion, list_columnas)
 
-        list_columnas = [5]
+        list_columnas = [8]
         ManipularGrillas.setColumnasFormatoCHK(self.grid_extrusion, list_columnas)
 
         list_columnas = [3, 4]
@@ -1519,7 +1478,7 @@ class Extrusion(wx.Frame):
 
         if rows != None:
             la_lista = ManipularRows.crearListaValores(rows, 1)
-            self.dic_extrusion = ManipularRows.crearDiccionario(rows, 1, 0)
+            self.dic_productos = ManipularRows.crearDiccionarioTodosLosCampos(rows, 1)
             self.comboBox_producto.Set(la_lista)
 
     def cargar_combo_turnos(self):
@@ -1563,7 +1522,7 @@ class Extrusion(wx.Frame):
         total_unidades = 0
         for i in range(cant_filas):
             cant_coches = self.grid_extrusion.GetCellValue(i, 3)
-            cant_unidades = self.grid_extrusion.GetCellValue(i, 4)
+            cant_unidades = self.grid_extrusion.GetCellValue(i, 6)
 
             cant_coches = FormatearNumeros.toNumSinPuntos(cant_coches)
             cant_unidades = FormatearNumeros.toNumSinPuntos(cant_unidades)

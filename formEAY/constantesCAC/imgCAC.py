@@ -1,7 +1,5 @@
 
 import os
-import formEAY.constantesCAC.configCAC as configCAC
-
 
 #LARUTA='C:/Users/svrCAC/PycharmProjects/ferretubosPrueba/formEAY/img/'
 

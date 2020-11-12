@@ -34,9 +34,9 @@ class Get_productos():
 
         nom_funcion = base_nom_funcion + 'get_productos'
 
-        cabeceras =['id_producto', 'nom_producto',  'activo']
+        #cabeceras =['id_producto', 'nom_producto',  'activo']
 
-        sSql = u"""SELECT id_producto, nom_producto, activo
+        sSql = u"""SELECT id_producto, nom_producto, activo, unid_x_coche, unid_x_estiba, unid_x_vagoneta
              FROM producto
              WHERE activo = {0}
              ORDER BY nom_producto

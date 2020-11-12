@@ -184,18 +184,20 @@ class DbInsertVarios():
     @staticmethod
     def cabeceraProcesoECD(uuid, usuario, mac, fecha_transacccion, hora_transacion, id_turno, turno,
                            total_coches, total_unidades, fecha_inicio, hora_inicio, fecha_fin,
-                           hora_fin, activo, area_produccion):
+                           hora_fin, activo, area_produccion, minutos_jornada, minutos_recesos, minutos_novedades):
 
         nom_funcion = base_nom_funcion + 'cabeceraProcesoECD'
 
         sSql = u"""INSERT INTO cabecera_proceso_ecd (uuid, usuario, mac, fecha_transacccion, hora_transacion, id_turno, 
                                     turno, total_coches, total_unidades, fecha_inicio, hora_inicio, fecha_fin, hora_fin,
-                                    activo, area_produccion)
+                                    activo, area_produccion,
+                                    minutos_jornada, minutos_recesos, minutos_novedades)
                             VALUES ('{0}', '{1}', '{2}', '{3}', '{4}', {5}, '{6}', {7},
-                                    {8}, '{9}', '{10}', '{11}', '{12}', '{13}', '{14}')
+                                    {8}, '{9}', '{10}', '{11}', '{12}', '{13}', '{14}',
+                                    {15}, {16}, {17})
                           """.format(uuid, usuario, mac, fecha_transacccion, hora_transacion, id_turno, turno,
                                      total_coches, total_unidades, fecha_inicio, hora_inicio, fecha_fin,
-                                     hora_fin, activo, area_produccion)
+                                     hora_fin, activo, area_produccion, minutos_jornada, minutos_recesos, minutos_novedades)
 
         try:
 
@@ -337,6 +339,9 @@ class DbInsertVarios():
             'coche': 'str',
             'cant_coches': 'int',
             'unidades_producto': 'int',
+            'unid_parrilla_vacia': 'int',
+            'total': 'int',
+            'contador': 'int',
             'activo': 'str',
             'uuid': 'str'
         }
@@ -375,7 +380,7 @@ class DbInsertVarios():
             'producto': 'str',
             'cant_coches': 'int',
             'unid_x_coche': 'int',
-            'unid_parrilla': 'int',
+            'unid_parrilla_vacia': 'int',
             'total': 'int',
             'rotura': 'int',
             'activo': 'str',
@@ -431,10 +436,10 @@ class DbInsertVarios():
 
         for i in range(cant_filas):
 
-            for j in range(1, cant_columnas):
+            for j in range(2, cant_columnas):
                 list_fila = []
                 producto = self.grid_cargueVagonetas.GetColLabelValue(j)
-                id_producto = self.dic_productos_id[producto]
+                id_producto = self.dic_productos_id[producto][0]
                 list_fila.append(id_producto)
                 list_fila.append(producto)
                 vagoneta = self.grid_cargueVagonetas.GetCellValue(i, 0)
@@ -450,8 +455,9 @@ class DbInsertVarios():
                 list_valores.append(list_fila)
 
 
-
         sSql_insert_DetalleCargueVagonetas = GenerarSql.crearMultiInsertSql(nom_tabla, dic_campos, list_valores)
+
+        print(sSql_insert_DetalleCargueVagonetas)
 
 
 
@@ -467,12 +473,14 @@ class DbInsertVarios():
         dic_campos = {
             'id_producto': 'int',
             'producto': 'str',
+            'empleado': 'str',
             'vagoneta': 'str',
             'de_primera': 'int',
             'de_segunda': 'int',
             'rotos': 'int',
             'activo': 'str',
             'uuid': 'str'
+
         }
 
         cant_filas = self.grid_descargue_vagonetas.GetNumberRows()
@@ -482,7 +490,9 @@ class DbInsertVarios():
         if cant_filas < 1:
             return 0
 
-        for j in range(2, cant_columnas):
+        #print('linea 490 dbvarios ',self.dic_productos_id)
+
+        for j in range(3, cant_columnas):
             list_fila = []
             for i in range(0, cant_filas, 3):
                 list_fila = []
@@ -490,7 +500,9 @@ class DbInsertVarios():
                 id_producto = self.dic_productos_id[producto]
                 list_fila.append(id_producto)
                 list_fila.append(producto)
-                vagoneta = self.grid_descargue_vagonetas.GetCellValue(i, 0)
+                empleado = self.grid_descargue_vagonetas.GetCellValue(i, 0)
+                vagoneta = self.grid_descargue_vagonetas.GetCellValue(i, 1)
+                list_fila.append(empleado)
                 list_fila.append(vagoneta)
 
                 primera = self.grid_descargue_vagonetas.GetCellValue(i, j)

@@ -777,8 +777,8 @@ class HistorialDetalleProcesos_ECD(wx.Frame):
 
         if area_produccion == AREA_EXTRUSION :
                 sSql = """
-                            SELECT sum(unidades_producto)  as total_unidades,
-                                   trunc( sum( p.peso * unidades_producto / 1000000.0), 2) as ton_producto
+                            SELECT sum(total)  as total_unidades,
+                                   trunc( sum( p.peso * total / 1000000.0), 2) as ton_producto
                             FROM producto as p, detalle_extrusion as de
                             WHERE  p.id_producto = de.id_producto and  uuid in (
                                 SELECT uuid
@@ -866,8 +866,8 @@ class HistorialDetalleProcesos_ECD(wx.Frame):
 
         if area_produccion == AREA_EXTRUSION :
                 sSql = """
-                            SELECT p.id_producto, producto, p.peso,  sum(unidades_producto)  as total_unidades,
-                                    trunc(p.peso * sum(unidades_producto) / 1000000.0, 2) as ton_producto
+                            SELECT p.id_producto, producto, p.peso,  sum(total)  as total_unidades,
+                                    trunc(p.peso * sum(total) / 1000000.0, 2) as ton_producto
                             FROM producto as p, detalle_extrusion as de
                             WHERE  p.id_producto = de.id_producto and  uuid in (
                                 SELECT uuid

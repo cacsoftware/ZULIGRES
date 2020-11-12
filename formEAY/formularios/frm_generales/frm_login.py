@@ -48,7 +48,7 @@ class Login(wx.Frame):
 
 		bSizer3.Add(self.m_staticText2, 0, wx.ALL, 5)
 
-		self.txt_usuario = wx.TextCtrl(self.m_panel1, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize,
+		self.txt_usuario = wx.TextCtrl(self.m_panel1, wx.ID_ANY, 'eay', wx.DefaultPosition, wx.DefaultSize,
 									   wx.TE_PROCESS_ENTER)
 		bSizer3.Add(self.txt_usuario, 1, wx.ALL, 5)
 
@@ -63,7 +63,7 @@ class Login(wx.Frame):
 
 		bSizer4.Add(self.m_staticText21, 0, wx.ALL, 5)
 
-		self.txt_password = wx.TextCtrl(self.m_panel1, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize,
+		self.txt_password = wx.TextCtrl(self.m_panel1, wx.ID_ANY, 'incheon', wx.DefaultPosition, wx.DefaultSize,
 										wx.TE_PASSWORD | wx.TE_PROCESS_ENTER)
 		bSizer4.Add(self.txt_password, 1, wx.ALL, 5)
 

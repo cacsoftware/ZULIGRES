@@ -249,7 +249,7 @@ class HistorialProcesos_ECD(wx.Frame):
                                                     wx.DefaultSize, 0)
 
         # Grid
-        self.grid_resultado_busqueda.CreateGrid(5, 8)
+        self.grid_resultado_busqueda.CreateGrid(5, 10)
         self.grid_resultado_busqueda.EnableEditing(True)
         self.grid_resultado_busqueda.EnableGridLines(True)
         self.grid_resultado_busqueda.EnableDragGridSize(False)
@@ -264,10 +264,12 @@ class HistorialProcesos_ECD(wx.Frame):
         self.grid_resultado_busqueda.SetColLabelValue(1, u"uuid")
         self.grid_resultado_busqueda.SetColLabelValue(2, u"Fecha Inicio")
         self.grid_resultado_busqueda.SetColLabelValue(3, u"Hora Inicio")
-        self.grid_resultado_busqueda.SetColLabelValue(4, u"Turno")
-        self.grid_resultado_busqueda.SetColLabelValue(5, u"Cant. Coches")
-        self.grid_resultado_busqueda.SetColLabelValue(6, u"Unidades")
-        self.grid_resultado_busqueda.SetColLabelValue(7, u"Activo")
+        self.grid_resultado_busqueda.SetColLabelValue(4, u"Dia")
+        self.grid_resultado_busqueda.SetColLabelValue(5, u"Turno")
+        self.grid_resultado_busqueda.SetColLabelValue(6, u"Cant. Coches")
+        self.grid_resultado_busqueda.SetColLabelValue(7, u"Unidades")
+        self.grid_resultado_busqueda.SetColLabelValue(8, u"Horas Laboradas")  ## total jornada -(recesos+novedades)
+        self.grid_resultado_busqueda.SetColLabelValue(9, u"Activo")
         self.grid_resultado_busqueda.SetColLabelAlignment(wx.ALIGN_CENTRE, wx.ALIGN_CENTRE)
 
         # Rows
@@ -357,13 +359,14 @@ class HistorialProcesos_ECD(wx.Frame):
         fecha_fin = ManejoFechasHoras.formatearFechaXSql(self.datePicker_fecha2)
 
         sSql = """
-                    SELECT id_cabecera, uuid, fecha_inicio, hora_inicio, turno, total_coches, total_unidades, activo
+                    SELECT id_cabecera, uuid, fecha_inicio, hora_inicio, TO_CHAR(fecha_inicio, 'DAY'), turno, total_coches, 
+                            total_unidades, trunc((minutos_jornada - (minutos_recesos + minutos_novedades))/60.0, 1) as horas_laboras, activo
                     FROM cabecera_proceso_ecd
                     WHERE fecha_inicio >= '{1}' and fecha_inicio <= '{2}' AND area_produccion = '{0}'                          
                 """.format(area_produccion, fecha_inicio, fecha_fin)
         sSql = sSql + cad_turno + cad_estado + ' ORDER BY fecha_inicio DESC, turno   '
 
-        cabeceras = ['id_cabecera', 'uuid', 'fecha_inicio', 'hora_inicio', 'turno', 'total_coches', 'total_unidades', 'activo']
+        cabeceras = ['id_cabecera', 'uuid', 'fecha_inicio', 'hora_inicio', 'Dia', 'turno', 'total_coches', 'total_unidades', 'Horas laboradas', 'activo']
         rows = Ejecutar_SQL.select_varios_registros(sSql, 'frm_historial_procesos_ECD/buscar()', 50, BasesDeDatos.DB_PRINCIPAL)
 
         if rows == None:
@@ -404,7 +407,7 @@ class HistorialProcesos_ECD(wx.Frame):
 
         ManipularGrillas.llenarGrilla(self.grid_resultado_busqueda, rows)
 
-        dic_color = {5: COLOR_RESALTE2, 6: COLOR_RESALTE1}
+        dic_color = {6: COLOR_RESALTE2, 7: COLOR_RESALTE1}
         ManipularGrillas.setColorFondoCeldaGrilla(self.grid_resultado_busqueda, dic_color)
 
         ManipularGrillas.setColorGrisFilasEstadoTrueFalse(self.grid_resultado_busqueda, 7)
