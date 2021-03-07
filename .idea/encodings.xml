@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="Encoding" native2AsciiForPropertiesFiles="true" defaultCharsetForPropertiesFiles="UTF-8">
+    <file url="file://$PROJECT_DIR$" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/formEAY" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/formEAY/formularios/frm_inventario" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/formEAY/formularios/frm_inventario/frm_despachar_mercancia.py" charset="UTF-8" />
+    <file url="PROJECT" charset="UTF-8" />
+  </component>
+</project>
