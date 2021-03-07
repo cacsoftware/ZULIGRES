@@ -48,7 +48,7 @@ class CargueVagonetas(wx.Frame):
         self.dir_mac = dir_mac
 
         icono_grillas = Img_grillas()
-        img_produccion = Img_produccion()
+        self.img_produccion = Img_produccion()
 
         bSizer_extrusion = wx.BoxSizer(wx.VERTICAL)
 
@@ -64,7 +64,7 @@ class CargueVagonetas(wx.Frame):
         bSizer7 = wx.BoxSizer(wx.VERTICAL)
 
         self.bitmap_logo_proceso = wx.StaticBitmap(self.panel_cabecera, wx.ID_ANY,
-                                                   wx.Bitmap(img_produccion.CARGUE_VAGONETAS,
+                                                   wx.Bitmap(self.img_produccion.CARGUE_VAGONETAS,
                                                              wx.BITMAP_TYPE_ANY), wx.DefaultPosition, wx.DefaultSize, 0)
         bSizer7.Add(self.bitmap_logo_proceso, 0, wx.ALL, 5)
 
@@ -802,6 +802,10 @@ class CargueVagonetas(wx.Frame):
                                                wx.DefaultSize, 0)
         bSizer56.Add(self.btn_ver_procedimiento, 0, wx.ALL, 5)
 
+        self.btn_ver_ultimoProceso = wx.Button(self, wx.ID_ANY, u"Ver Ultimo Proceso", wx.DefaultPosition,
+                                               wx.DefaultSize, 0)
+        bSizer56.Add(self.btn_ver_ultimoProceso, 0, wx.ALL, 5)
+
         bSizer_pie_de_formulario.Add(bSizer56, 0, wx.EXPAND, 5)
 
         bSizer55 = wx.BoxSizer(wx.HORIZONTAL)
@@ -838,6 +842,8 @@ class CargueVagonetas(wx.Frame):
         self.cargar_valores_de_inicializacion()
 
         # Connect Events
+        self.btn_ver_ultimoProceso.Bind(wx.EVT_BUTTON, self.btn_ver_ultimoProcesoOnButtonClick)
+
         self.m_notebook1.Bind(wx.EVT_NOTEBOOK_PAGE_CHANGED, self.m_notebook1OnNotebookPageChanged)
 
 
@@ -896,6 +902,14 @@ class CargueVagonetas(wx.Frame):
         pass
 
     # Virtual event handlers, overide them in your derived class
+
+    def btn_ver_ultimoProcesoOnButtonClick(self, event):
+        import formEAY.formularios.frm_procesos.frm_vista_previa_proceso as frm_vista_previa_proceso
+        frame_vistaPrevia = frm_vista_previa_proceso.VistaPreviaProceso(self, self.usuario, self.dir_mac,
+                                                                        self.img_produccion.CARGUE_VAGONETAS, 'CARGUE DE VAGONETAS')
+        frame_vistaPrevia.Center()
+        frame_vistaPrevia.Show()
+        event.Skip()
 
     def btn_guardarOnButtonClick(self, event):
 
@@ -1000,7 +1014,7 @@ class CargueVagonetas(wx.Frame):
 
 
 
-        self.lbl_estado_guardar.SetLabel('1/8  Estamos guardando, el procesos puede tardar unos segundos...')
+        self.lbl_estado_guardar.SetLabel('1/9  Estamos guardando, el procesos puede tardar unos segundos...')
         rta_cabecera = DbInsertVarios.cabeceraProcesoECD(self.uuid_eay, self.usuario, self.dir_mac,
                                                            fecha_transacccion,
                                                            hora_transacion, id_turno, el_turno,
@@ -1009,21 +1023,26 @@ class CargueVagonetas(wx.Frame):
                                                            hora_fin, activo, self.AREA_PRODUCCION,
                                                          minutos_jornada, minutos_receso, minutos_novedades)
 
-        self.lbl_estado_guardar.SetLabel('2/8  Estamos guardando, el proceso puede tardar unos segundos...')
+        self.lbl_estado_guardar.SetLabel('2/9  Estamos guardando, el proceso puede tardar unos segundos...')
         rta_insert_DetalleCargueVagonetas = DbInsertVarios.detalleCargueVagonetas(self)
-        self.lbl_estado_guardar.SetLabel('3/8  Estamos guardando, el proceso puede tardar unos segundos...')
+
+        # self.lbl_estado_guardar.SetLabel('3/9  Estamos guardando, el proceso puede tardar unos segundos...')
+        # rta_insert_roturaCargueVagonetas = DbInsertVarios.roturaCargueVagonetas(self)
+
+        self.lbl_estado_guardar.SetLabel('4/9  Estamos guardando, el proceso puede tardar unos segundos...')
         rta_actualizar_stock = self.func_actualizar_stock_productos()
-        self.lbl_estado_guardar.SetLabel('4/8  Estamos guardando, el proceso puede tardar unos segundos...')
+
+        self.lbl_estado_guardar.SetLabel('5/9  Estamos guardando, el proceso puede tardar unos segundos...')
         rta_insert_empleados = DbInsertVarios.personal(self)
 
 
-        self.lbl_estado_guardar.SetLabel('5/8  Estamos guardando, el proceso puede tardar unos segundos...')
+        self.lbl_estado_guardar.SetLabel('6/9  Estamos guardando, el proceso puede tardar unos segundos...')
         rta_insert_recesosProgramados = DbInsertVarios.recesosProgramados(self)
-        self.lbl_estado_guardar.SetLabel('6/8  Estamos guardando, el proceso puede tardar unos segundos...')
+        self.lbl_estado_guardar.SetLabel('7/9  Estamos guardando, el proceso puede tardar unos segundos...')
         rta_insert_novedades = DbInsertVarios.novedades(self)
-        self.lbl_estado_guardar.SetLabel('7/8  Estamos guardando, el proceso puede tardar unos segundos...')
+        self.lbl_estado_guardar.SetLabel('8/9  Estamos guardando, el proceso puede tardar unos segundos...')
         rta_insert_notas = DbInsertVarios.notas(self)
-        self.lbl_estado_guardar.SetLabel('8/8  Estamos guardando, el proceso puede tardar unos segundos...')
+        self.lbl_estado_guardar.SetLabel('9/9  Estamos guardando, el proceso puede tardar unos segundos...')
         rta_insert_rotura = self.guardar_listaRotura()
 
         self.lbl_estado_guardar.SetLabel('')
@@ -1422,9 +1441,9 @@ class CargueVagonetas(wx.Frame):
         cols_busqueda = [0]
         cols_a_modificar = [1]
 
-        dic_operaciones = {'stock_extrusion':'stock_extrusion - '}
+        dic_operaciones = {'stock_cochado':'stock_cochado - '}
 
-        nom_campos = ['id_producto', 'stock_extrusion']
+        nom_campos = ['id_producto', 'stock_cochado']
         tipo_campos = ['int', 'int']
 
         sSql = GenerarSql.crearMultiUpdateSql_operaciones(nom_tabla, rows, cols_busqueda, cols_a_modificar, nom_campos,

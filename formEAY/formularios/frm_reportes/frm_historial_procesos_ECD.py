@@ -20,6 +20,7 @@ from formEAY.dbaseCAC.dbVarios import DbGetVarios
 from formEAY.constantesCAC.constantesCAC import BasesDeDatos
 
 from formEAY.constantesCAC.constantesCAC import AreasProduccion
+from formEAY.constantesCAC.imgCAC import Img_produccion
 
 from formEAY.constantesCAC.coloresCAC import ColorsFondoCellGrilla, Colors_botones
 
@@ -34,7 +35,7 @@ COLOR_RESALTE2 = wx.Colour(229, 212, 210)
 
 class HistorialProcesos_ECD(wx.Frame):
 
-    def __init__(self, parent):
+    def __init__(self, parent, usuario='usuario1', dir_mac = 'la dir mac del pc'):
         wx.Frame.__init__(self, parent, id=wx.ID_ANY,
                           title=u"Historial de Procesos [Extrusión, Cargue y Descargue de Vagonetas]",
                           pos=wx.DefaultPosition, size=wx.Size(1000, 650),
@@ -42,6 +43,10 @@ class HistorialProcesos_ECD(wx.Frame):
 
         self.SetSizeHints(wx.Size(750, 400), wx.DefaultSize)
         self.SetBackgroundColour(wx.Colour(240, 240, 240))
+
+        self.img_produccion = Img_produccion()
+        self.usuario = usuario
+        self.dir_mac = dir_mac
 
         bSizer_principal = wx.BoxSizer(wx.VERTICAL)
 
@@ -102,7 +107,7 @@ class HistorialProcesos_ECD(wx.Frame):
 
         bSizer17 = wx.BoxSizer(wx.VERTICAL)
 
-        radioBox_areaChoices = [AreasProduccion.EXTRUSION, AreasProduccion.COCHADO , AreasProduccion.CARGUE_VAGONETAS, AreasProduccion.DESCARGUE_VAGONETAS]
+        radioBox_areaChoices = [AreasProduccion.EXTRUSION, AreasProduccion.COCHADO , AreasProduccion.CARGUE_VAGONETAS, AreasProduccion.DESCARGUE_VAGONETAS, AreasProduccion.DESPACHOS]
         self.radioBox_area = wx.RadioBox(self.panel_cabecera, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition,
                                          wx.DefaultSize, radioBox_areaChoices, 1, wx.RA_SPECIFY_COLS)
         self.radioBox_area.SetSelection(0)
@@ -332,8 +337,9 @@ class HistorialProcesos_ECD(wx.Frame):
         lista_turnos_sel = self.checkList_turno.GetCheckedStrings()
 
         if len(lista_turnos_sel) == 0 :
-            wx.MessageBox(u'Debes seleccionar mínimo un Turno', u'Atención', wx.OK | wx.ICON_INFORMATION)
-            return 0
+            if area_produccion != AreasProduccion.DESPACHOS:
+                wx.MessageBox(u'Debes seleccionar mínimo un Turno', u'Atención', wx.OK | wx.ICON_INFORMATION)
+                return 0
 
         for i in lista_turnos_sel:
             el_id = self.dic_turnos_todos[i][0]
@@ -358,63 +364,118 @@ class HistorialProcesos_ECD(wx.Frame):
         fecha_inicio = ManejoFechasHoras.formatearFechaXSql(self.datePicker_fecha1)
         fecha_fin = ManejoFechasHoras.formatearFechaXSql(self.datePicker_fecha2)
 
-        sSql = """
-                    SELECT id_cabecera, uuid, fecha_inicio, hora_inicio, TO_CHAR(fecha_inicio, 'DAY'), turno, total_coches, 
-                            total_unidades, trunc((minutos_jornada - (minutos_recesos + minutos_novedades))/60.0, 1) as horas_laboras, activo
-                    FROM cabecera_proceso_ecd
-                    WHERE fecha_inicio >= '{1}' and fecha_inicio <= '{2}' AND area_produccion = '{0}'                          
-                """.format(area_produccion, fecha_inicio, fecha_fin)
-        sSql = sSql + cad_turno + cad_estado + ' ORDER BY fecha_inicio DESC, turno   '
-
-        cabeceras = ['id_cabecera', 'uuid', 'fecha_inicio', 'hora_inicio', 'Dia', 'turno', 'total_coches', 'total_unidades', 'Horas laboradas', 'activo']
-        rows = Ejecutar_SQL.select_varios_registros(sSql, 'frm_historial_procesos_ECD/buscar()', 50, BasesDeDatos.DB_PRINCIPAL)
-
-        if rows == None:
-            self.m_panel_resultados.Hide()
-        else:
-            self.lbl_area.SetLabel(area_produccion)
-
-            if area_produccion == 'EXTRUSION':
-                self.lbl_etq_totalCoches.SetLabel('Total Coches:')
-                self.grid_resultado_busqueda.SetColLabelValue(5, u"Cant. Coches")
-            else:
-                self.lbl_etq_totalCoches.SetLabel('Total Vagonetas:')
-                self.grid_resultado_busqueda.SetColLabelValue(5, u"Cant. Vagonetas")
-
-            cad_fecha = fecha_inicio + '  al  ' + fecha_fin
-            self.lbl_fechas.SetLabel(cad_fecha)
-            cant_registros = str(len(rows))
-            self.lbl_registrosencontrados.SetLabel(cant_registros)
+        if area_produccion != 'DESPACHOS':
 
             sSql = """
-                                SELECT sum(total_coches), sum(total_unidades)
-                                FROM cabecera_proceso_ecd
-                                WHERE fecha_inicio >= '{1}' and fecha_inicio <= '{2}' AND area_produccion = '{0}'                          
-                            """.format(area_produccion, fecha_inicio, fecha_fin)
-            sSql = sSql + cad_turno + cad_estado
+                        SELECT id_cabecera, uuid, fecha_inicio, hora_inicio, TO_CHAR(fecha_inicio, 'DAY'), turno, total_coches, 
+                                total_unidades, trunc((minutos_jornada - (minutos_recesos + minutos_novedades))/60.0, 1) as horas_laboras, activo
+                        FROM cabecera_proceso_ecd
+                        WHERE fecha_inicio >= '{1}' and fecha_inicio <= '{2}' AND area_produccion = '{0}'                          
+                    """.format(area_produccion, fecha_inicio, fecha_fin)
+            sSql = sSql + cad_turno + cad_estado + ' ORDER BY fecha_inicio DESC, turno   '
+
+            cabeceras = ['id_cabecera', 'uuid', 'fecha_inicio', 'hora_inicio', 'Dia', 'turno', 'total_coches', 'total_unidades', 'Horas laboradas', 'activo']
+            rows = Ejecutar_SQL.select_varios_registros(sSql, 'frm_historial_procesos_ECD/buscar()', 50, BasesDeDatos.DB_PRINCIPAL)
+
+            ManipularGrillas.setCantidadColumnasGrilla(self.grid_resultado_busqueda, len(cabeceras))
+            ManipularGrillas.setCabecerasGrilla(self.grid_resultado_busqueda, cabeceras)
+
+            if rows == None:
+                self.m_panel_resultados.Hide()
+            else:
+                self.lbl_area.SetLabel(area_produccion)
+
+                if area_produccion == 'EXTRUSION':
+                    self.lbl_etq_totalCoches.SetLabel('Total Coches:')
+                    self.grid_resultado_busqueda.SetColLabelValue(5, u"Cant. Coches")
+                else:
+                    self.lbl_etq_totalCoches.SetLabel('Total Vagonetas:')
+                    self.grid_resultado_busqueda.SetColLabelValue(5, u"Cant. Vagonetas")
+
+                cad_fecha = fecha_inicio + '  al  ' + fecha_fin
+                self.lbl_fechas.SetLabel(cad_fecha)
+                cant_registros = str(len(rows))
+                self.lbl_registrosencontrados.SetLabel(cant_registros)
+
+                sSql = """
+                                    SELECT sum(total_coches), sum(total_unidades)
+                                    FROM cabecera_proceso_ecd
+                                    WHERE fecha_inicio >= '{1}' and fecha_inicio <= '{2}' AND area_produccion = '{0}'                          
+                                """.format(area_produccion, fecha_inicio, fecha_fin)
+                sSql = sSql + cad_turno + cad_estado
+
+                cabeceras = ['total_coches', 'total_unidades']
+                row_totales = Ejecutar_SQL.select_un_registro(sSql, 'frm_historial_procesos_ECD/buscar()--> totales',
+                                                                       BasesDeDatos.DB_PRINCIPAL)
+                el_total_coches = str(row_totales[0])
+                el_total_unidades = str(row_totales[1])
+                self.lbl_totalCoches.SetLabel(el_total_coches)
+                self.lbl_total_unidades.SetLabel(el_total_unidades)
+
+                self.m_panel_resultados.Show()
+
+            ManipularGrillas.llenarGrilla(self.grid_resultado_busqueda, rows)
+
+            dic_color = {6: COLOR_RESALTE2, 7: COLOR_RESALTE1}
+            ManipularGrillas.setColorFondoCeldaGrilla(self.grid_resultado_busqueda, dic_color)
+
+            ManipularGrillas.setColorGrisFilasEstadoTrueFalse(self.grid_resultado_busqueda, 7)
+
+        if area_produccion == 'DESPACHOS':
+            sSql = """
+                    SELECT  dm.id_despacho, dm.fecha, dm.hora,  TO_CHAR(dm.fecha, 'DAY'), 
+                            dm.origen_venta, dm.doc_relacionado, dm.total_unidades, 
+                            c.nom || ' ' ||c.ape1 as cliente, c.nit, c.celular,  dm.quien_recibe,
+ dm.tipo_carro || ' ' || dm.color || ' PLACA: ' ||  dm.placa || ' DE ' || dm.ciudad_carro || ' - ' || dm.nacionalidad_carro, dm.activo                   
+                    FROM despacho_mercancia as dm, cliente as c
+                    where c.id_cliente = dm.id_cliente and dm.activo='True'
+            """
+            rows = Ejecutar_SQL.select_varios_registros(sSql, 'frm_historial_procesos_ECD/btn_buscarOnButtonClick',
+                                                        500, BasesDeDatos.DB_PRINCIPAL)
+            if rows == None:
+                self.m_panel_resultados.Hide()
+            else:
+                self.lbl_area.SetLabel(area_produccion)
+
+                ManipularGrillas.setCantidadColumnasGrilla(self.grid_resultado_busqueda, 13)
+
+                cabeceras = ['id', 'Fecha', 'Hora', 'Dia', 'Origen Venta', 'num Doc', 'total unids' ,'Cliente', 'Nit', 'Celular',
+                             'Recibio', 'Transporto', 'activo']
+                ManipularGrillas.setCabecerasGrilla(self.grid_resultado_busqueda, cabeceras)
+
+                ManipularGrillas.llenarGrilla(self.grid_resultado_busqueda, rows)
 
 
 
-            cabeceras = ['total_coches', 'total_unidades']
-            row_totales = Ejecutar_SQL.select_un_registro(sSql, 'frm_historial_procesos_ECD/buscar()--> totales',
-                                                                   BasesDeDatos.DB_PRINCIPAL)
-            el_total_coches = str(row_totales[0])
-            el_total_unidades = str(row_totales[1])
-            self.lbl_totalCoches.SetLabel(el_total_coches)
-            self.lbl_total_unidades.SetLabel(el_total_unidades)
+                dic_color = {6: COLOR_RESALTE2, 7: COLOR_RESALTE1, 8: COLOR_RESALTE1, 9: COLOR_RESALTE1}
+                ManipularGrillas.setColorFondoCeldaGrilla(self.grid_resultado_busqueda, dic_color)
+                ManipularGrillas.setColorGrisFilasEstadoTrueFalse(self.grid_resultado_busqueda, 7)
 
-            self.m_panel_resultados.Show()
-
-        ManipularGrillas.llenarGrilla(self.grid_resultado_busqueda, rows)
-
-        dic_color = {6: COLOR_RESALTE2, 7: COLOR_RESALTE1}
-        ManipularGrillas.setColorFondoCeldaGrilla(self.grid_resultado_busqueda, dic_color)
-
-        ManipularGrillas.setColorGrisFilasEstadoTrueFalse(self.grid_resultado_busqueda, 7)
 
         event.Skip()
 
     def grid_resultado_busquedaOnGridCellLeftDClick(self, event):
+
+        columna = 1  ## es la columna uuid que  esta oculta
+        fila = event.GetRow()
+
+        areaProduccion = self.radioBox_area.GetStringSelection()
+
+        dic_areasProduccion = {'EXTRUSION': Img_produccion.EXTRUSION, 'COCHADO': Img_produccion.COCHADO,
+                               'CARGUE DE VAGONETAS':Img_produccion.CARGUE_VAGONETAS,
+                               'DESCARGUE DE VAGONETAS':Img_produccion.DESCARGUE_VAGONETAS}
+
+        if areaProduccion != AreasProduccion.DESPACHOS :
+            imagen_produccion = dic_areasProduccion[areaProduccion]
+
+            uuid = self.grid_resultado_busqueda.GetCellValue(fila, columna)
+            estado = self.grid_resultado_busqueda.GetCellValue(fila, 9)
+
+
+            import formEAY.formularios.frm_procesos.frm_vista_previa_despacho as frm_vista_previa_despacho
+            frame_vistaPrevia = frm_vista_previa_despacho.frm_vistaPreviaDespacho(self, self.usuario, self.dir_mac, uuid, estado)
+            frame_vistaPrevia.Center()
+            frame_vistaPrevia.Show()
         event.Skip()
 
 

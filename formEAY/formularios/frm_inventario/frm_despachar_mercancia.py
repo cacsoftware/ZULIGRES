@@ -5,8 +5,13 @@ import wx.grid
 import wx.xrc
 import os
 import time
+
+from datetime import datetime
+
 import pandas as pd
 from uuid import uuid4
+
+from pyeay.fechasHoras import ManejoFechasHoras
 
 from pyeay.validator import validador_solo_digitos
 from pyeay.dbcac.conexiondb import Ejecutar_SQL, GenerarSql
@@ -537,14 +542,17 @@ class DespacharMercancia(wx.Frame):
         else:
             self.btn_guardar.Hide()
 
+            fecha, hora =ManejoFechasHoras.getFechaHoraActual()
+
+
             self.lbl_estado_guardar.SetLabel('1/3  Estamos guardando, el proceso puede tardar unos segundos...')
-            rta1 = self.func_guardar_cabecera_despacho()
+            rta1 = self.func_guardar_cabecera_despacho(fecha, hora)
             self.lbl_estado_guardar.SetLabel('2/3  Estamos guardando, el proceso puede tardar unos segundos...')
             rta2 = self.func_guardar_items_despacho()
             self.lbl_estado_guardar.SetLabel('3/3  Estamos guardando, el proceso puede tardar unos segundos...')
             rta3 = self.func_actualizar_stock_productos()
 
-            self.func_imprimir_orden_servicio()
+            self.func_imprimir_orden_servicio(fecha, hora)
 
             if rta1 == 1 and rta2 == 1 and rta3 == 1:
                 mensaje = u'El proceso se llevo a cabo correctamente, Desea Imprimir?'
@@ -618,7 +626,7 @@ class DespacharMercancia(wx.Frame):
 
         return row[0]
 
-    def func_imprimir_orden_servicio(self):
+    def func_imprimir_orden_servicio(self, fecha, hora):
         from reportlab.lib.pagesizes import letter
         from reportlab.pdfgen import canvas
 
@@ -640,7 +648,6 @@ class DespacharMercancia(wx.Frame):
         CANT_FILAS_POR_HOJA = 11
         cant_filas_rows = len(self.rows)
 
-
         cant_hojas = cant_filas_rows // CANT_FILAS_POR_HOJA
 
         if cant_filas_rows // CANT_FILAS_POR_HOJA > 0:
@@ -660,7 +667,6 @@ class DespacharMercancia(wx.Frame):
         else:
             if cant_filas_rows % CANT_FILAS_POR_HOJA > 0:
                 list_rangos.append(cant_filas_rows)
-
 
         for hoja in range(cant_hojas):
 
@@ -683,6 +689,13 @@ class DespacharMercancia(wx.Frame):
             ciudad_carro = self.txt_ciudad.GetValue()
 
             #////////////////////
+
+            # text = c.beginText(100, h - 80)
+            # text.setFont("Courier-Bold", 10)
+            # cad_orden = 'Fecha: '
+            # text.textLine(cad_orden)
+            # c.drawText(text)
+
             text = c.beginText(365, h - 80)
             text.setFont("Courier-Bold", 10)
             cad_orden = 'Orden de servicio: '
@@ -707,8 +720,23 @@ class DespacharMercancia(wx.Frame):
             text.textLine(cad_dir)
             c.drawText(text)
 
-            text = c.beginText(MARGEN_IZQ, h - 105)
+
+            text = c.beginText(MARGEN_IZQ, h - 92 )  ## 105
             text.setFont("Courier", 10)
+
+            cad_fecha= 'Fecha:'.ljust(9) + ''.ljust(49)
+            text.textLine(cad_fecha)
+            c.drawText(text)
+
+            text = c.beginText(MARGEN_IZQ, h - 92)  ## 105
+            text.setFont("Courier", 10)
+
+            fecha_y_hora = fecha + '   ' + hora
+            cad_fecha = ''.ljust(9) + fecha_y_hora.ljust(40)
+            text.textLine(cad_fecha)
+            c.drawText(text)
+
+
 
             cad_nomCliente = 'Cliente:'.ljust(9) + ''.ljust(49) + 'Nit: '.rjust(10)
             text.textLine(cad_nomCliente)
@@ -738,8 +766,6 @@ class DespacharMercancia(wx.Frame):
 
             text = c.beginText(MARGEN_IZQ, h - 170)
             text.setFont("Courier", 10)
-
-
 
             for i in range((hoja) * 12,  list_rangos[hoja], 1):
                 fila = self.rows[i]
@@ -817,7 +843,6 @@ class DespacharMercancia(wx.Frame):
 
 
     def func_guardar_items_despacho(self):
-
         cant_filas = self.grid_productos.GetNumberRows()
         fila = []
         self.rows = []
@@ -837,10 +862,8 @@ class DespacharMercancia(wx.Frame):
         rta = Ejecutar_SQL.insert_filas(sSql.upper(), 'frm_despachar_mercancia/func_guardar_items_despacho', BasesDeDatos.DB_PRINCIPAL)
         return rta
 
-    def func_guardar_cabecera_despacho(self):
-        from formEAY.utilCAC.Utiles_proposito_general import ManejoFechasHoras
+    def func_guardar_cabecera_despacho(self,  fecha, hora):
 
-        fecha, hora = ManejoFechasHoras.getFechaHoraActual()
         # self.id_cliente
         quien_recibe = self.txt_quien_recibe.GetValue()
         celular_recibe = self.txt_celular_recibe.GetValue()
@@ -856,9 +879,6 @@ class DespacharMercancia(wx.Frame):
         peso_ton = self.lbl_toneladas.GetLabel()
         volumen_m3 = self.lbl_volumen.GetLabel()
         nota = self.txt_nota.GetValue()
-        #self.uuid_eay
-        # self.usuario
-        # self.dir_mac
 
         sSql = """
                         INSERT INTO despacho_mercancia (fecha, hora, id_cliente, quien_recibe, celular_recibe, tipo_carro,

@@ -9,6 +9,8 @@
 
 from uuid import uuid4
 
+import pandas as pd
+
 import wx
 import wx.adv
 import wx.grid
@@ -18,6 +20,8 @@ from pyeay.grillas import ManipularGrillas
 from pyeay.rows import ManipularRows
 from pyeay.validator import validador_solo_digitos
 from pyeay.fechasHoras import ManejoFechasHoras
+from pyeay.dbcac.conexiondb import Ejecutar_SQL, GenerarSql
+from formEAY.constantesCAC.constantesCAC import BasesDeDatos
 
 from formEAY.constantesCAC.coloresCAC import ColorsFondoCellGrilla
 from formEAY.constantesCAC.constantesCAC import AreasProduccion
@@ -46,7 +50,7 @@ class Cochado(wx.Frame):
 		self.dir_mac = dir_mac
 
 		icono_grillas = Img_grillas()
-		img_produccion = Img_produccion()
+		self.img_produccion = Img_produccion()
 
 		bSizer_extrusion = wx.BoxSizer(wx.VERTICAL)
 
@@ -62,7 +66,7 @@ class Cochado(wx.Frame):
 		bSizer7 = wx.BoxSizer(wx.VERTICAL)
 
 		self.bitmap_logo_proceso = wx.StaticBitmap(self.panel_cabecera, wx.ID_ANY,
-												   wx.Bitmap(img_produccion.COCHADO,
+												   wx.Bitmap(self.img_produccion.COCHADO,
 															 wx.BITMAP_TYPE_ANY), wx.DefaultPosition, wx.DefaultSize, 0)
 		bSizer7.Add(self.bitmap_logo_proceso, 0, wx.ALL, 5)
 
@@ -718,6 +722,10 @@ class Cochado(wx.Frame):
 											   wx.DefaultSize, 0)
 		bSizer56.Add(self.btn_ver_procedimiento, 0, wx.ALL, 5)
 
+		self.btn_ver_ultimoProceso = wx.Button(self, wx.ID_ANY, u"Ver Ultimo Proceso", wx.DefaultPosition,
+											   wx.DefaultSize, 0)
+		bSizer56.Add(self.btn_ver_ultimoProceso, 0, wx.ALL, 5)
+
 		bSizer_pie_de_formulario.Add(bSizer56, 0, wx.EXPAND, 5)
 
 		bSizer55 = wx.BoxSizer(wx.HORIZONTAL)
@@ -753,6 +761,9 @@ class Cochado(wx.Frame):
 		self.Centre(wx.BOTH)
 
 		# Connect Events
+
+		self.btn_ver_ultimoProceso.Bind(wx.EVT_BUTTON, self.btn_ver_ultimoProcesoOnButtonClick)
+
 		self.comboBox_tipoSecadero.Bind(wx.EVT_COMBOBOX, self.comboBox_tipoSecaderoOnCombobox)
 		# self.comboBox_tipoSecadero.Bind(wx.EVT_LEFT_DOWN, self.comboBox_turnoOnLeftDown)
 		self.comboBox_turno.Bind(wx.EVT_COMBOBOX, self.comboBox_turnoOnCombobox)
@@ -789,6 +800,14 @@ class Cochado(wx.Frame):
 
 	def __del__(self):
 		pass
+
+	def btn_ver_ultimoProcesoOnButtonClick(self, event):
+		import formEAY.formularios.frm_procesos.frm_vista_previa_proceso as frm_vista_previa_proceso
+		frame_vistaPrevia = frm_vista_previa_proceso.VistaPreviaProceso(self, self.usuario, self.dir_mac,
+																		self.img_produccion.COCHADO, 'COCHADO')
+		frame_vistaPrevia.Center()
+		frame_vistaPrevia.Show()
+		event.Skip()
 
 	# Virtual event handlers, overide them in your derived class
 	def comboBox_tipoSecaderoOnCombobox(self, event):
@@ -893,8 +912,8 @@ class Cochado(wx.Frame):
 		if secadero != 'SECADERO 3':
 			unidades_parrila = 0
 
-		total = (int(cant_coches) * int(unidades_x_coche)) - int(unidades_parrila)
-		total = str(total)
+		if unidades_parrila == '':
+			unidades_parrila = 0
 
 		if producto == '':
 			wx.MessageBox(u'Debes seleccionar un Producto', u'Atención', wx.OK | wx.ICON_INFORMATION)
@@ -907,6 +926,9 @@ class Cochado(wx.Frame):
 			wx.MessageBox(u'Debes ingresar un número valido de unidades por coche', u'Atención',
 						  wx.OK | wx.ICON_INFORMATION)
 			return 0
+
+		total = (int(cant_coches) * int(unidades_x_coche)) - int(unidades_parrila)
+		total = str(total)
 
 		row = [secadero, id_producto, producto, cant_coches, unidades_x_coche, unidades_parrila, total, unidades_rotura]
 
@@ -1019,6 +1041,7 @@ class Cochado(wx.Frame):
 		event.Skip()
 
 	def btn_ver_procedimientoOnButtonClick(self, event):
+		self.func_actualizar_stock_productos()
 		event.Skip()
 
 	def btn_guardarOnButtonClick(self, event):
@@ -1111,8 +1134,8 @@ class Cochado(wx.Frame):
 
 		rta_insert_DetalleCocheros = DbInsertVarios.detalleCocheros(self, self.comboBox_tipoSecadero.GetValue())
 
-		# self.lbl_estado_guardar.SetLabel('3/8  Estamos guardando, el proceso puede tardar unos segundos...')
-		# rta_actualizar_stocks_productos = self.func_actualizar_stock_productos()
+		self.lbl_estado_guardar.SetLabel('3/8  Estamos guardando, el proceso puede tardar unos segundos...')
+		rta_actualizar_stocks_productos = self.func_actualizar_stock_productos()
 
 		self.lbl_estado_guardar.SetLabel('4/7  Estamos guardando, el proceso puede tardar unos segundos...')
 		rta_insert_empleados = DbInsertVarios.personal(self)
@@ -1142,6 +1165,89 @@ class Cochado(wx.Frame):
 		event.Skip()
 
 	##FUNCIONES EAY
+
+	def func_actualizar_stock_productos(self):
+
+		# -----------------------------------
+		cant_filas = self.grid_extrusion.GetNumberRows()
+		cant_columnas = self.grid_extrusion.GetNumberCols()
+		list_valores = []
+
+		for i in range(cant_filas):
+			list_fila = []
+			id_producto = self.grid_extrusion.GetCellValue(i, 1)
+			unid_primera = int(self.grid_extrusion.GetCellValue(i, 6))
+			unid_rotura = int(self.grid_extrusion.GetCellValue(i, 7))
+			total_unid = unid_primera + unid_rotura
+
+			list_fila.append(id_producto)
+			list_fila.append(unid_primera)
+			list_fila.append(unid_rotura)
+			list_fila.append(total_unid)
+
+			list_valores.append(list_fila)
+
+
+		# -----------------------------------
+		df = pd.DataFrame(list_valores,
+						  columns=['id', 'primera', 'rotura', 'total']
+						  )
+		df = df.groupby(['id']).sum()
+		# df = df.sort_values(['producto', 'calidad'])
+
+		rows = df.to_records().tolist()
+
+		df2 = df.loc[:, ['total']]
+		rows_para_extrusion = df2.to_records().tolist()
+		df3= df.loc[:, ['primera']]
+
+
+
+		rows_para_cochado = df3.to_records().tolist()
+
+		# print(ro00ws_para_extrusion)
+		# print(rows_para_cochado)
+
+		##__________________________________________________________
+		nom_tabla = 'producto'
+		cols_busqueda = [0]
+		cols_a_modificar = [1]
+
+		dic_operaciones = {'stock_extrusion': 'stock_extrusion - '}
+
+		nom_campos = ['id_producto', 'stock_extrusion']
+		tipo_campos = ['int', 'int']
+
+		sSql = GenerarSql.crearMultiUpdateSql_operaciones(nom_tabla, rows_para_extrusion, cols_busqueda, cols_a_modificar, nom_campos,
+														  tipo_campos, dic_operaciones)
+
+
+		rta = Ejecutar_SQL.update_filas(sSql, 'frm_cochado/func_actualizar_stock_productos',
+										BasesDeDatos.DB_PRINCIPAL)
+
+		##__________________________________________________________
+		nom_tabla = 'producto'
+		cols_busqueda = [0]
+		cols_a_modificar = [1]
+
+		dic_operaciones = {'stock_cochado': 'stock_cochado + '}
+
+		nom_campos = ['id_producto', 'stock_cochado']
+		tipo_campos = ['int', 'int']
+
+		sSql = GenerarSql.crearMultiUpdateSql_operaciones(nom_tabla, rows_para_cochado, cols_busqueda,
+														  cols_a_modificar, nom_campos,
+														  tipo_campos, dic_operaciones)
+
+
+		rta = Ejecutar_SQL.update_filas(sSql, 'frm_cochado/func_actualizar_stock_productos',
+										BasesDeDatos.DB_PRINCIPAL)
+
+		return rta
+
+		return rta
+
+
 	def func_calcular_tiempos(self):
 		minutos_recesos = 0
 		minutos_novedades = 0

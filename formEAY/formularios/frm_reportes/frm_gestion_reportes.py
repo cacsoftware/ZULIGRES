@@ -11,11 +11,14 @@ import wx.xrc
 
 class Reportes(wx.Frame):
 
-	def __init__(self, parent):
+	def __init__(self, parent, usuario='usuario1', dir_mac = 'la dir mac del pc'):
 		wx.Frame.__init__(self, parent, id=wx.ID_ANY, title=u"Reportes", pos=wx.DefaultPosition, size=wx.Size(282, 419),
 						  style=wx.DEFAULT_FRAME_STYLE | wx.TAB_TRAVERSAL)
 
 		self.SetSizeHints(wx.Size( 282,238 ), wx.DefaultSize )
+
+		self.usuario = usuario
+		self.dir_mac = dir_mac
 
 		bSizer7 = wx.BoxSizer(wx.VERTICAL)
 
@@ -107,7 +110,7 @@ class Reportes(wx.Frame):
 
 	def btn_historial_de_procesosOnButtonClick(self, event):
 		import formEAY.formularios.frm_reportes.frm_historial_procesos_ECD as frm_historial_procesos_ECD
-		frame_historial_procesos_ECD = frm_historial_procesos_ECD.HistorialProcesos_ECD(self)
+		frame_historial_procesos_ECD = frm_historial_procesos_ECD.HistorialProcesos_ECD(self, self.usuario, self.dir_mac)
 		frame_historial_procesos_ECD.Center()
 		frame_historial_procesos_ECD.Show()
 		event.Skip()

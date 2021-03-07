@@ -33,6 +33,7 @@ class Principal(wx.Frame):
         self.SetBackgroundColour(wx.Colour(64, 64, 64))
 
         self.usuario = ''
+        self.dir_mac = ''
 
 
         bSizer7 = wx.BoxSizer(wx.VERTICAL)
@@ -105,20 +106,25 @@ class Principal(wx.Frame):
 
 
 
-
-        self.btn_configuracion = wx.Button(self.m_panel3, wx.ID_ANY, u"Configuración", wx.DefaultPosition, wx.Size(180, -1),
-                                      wx.NO_BORDER)
-        self.btn_configuracion.SetBackgroundColour(wx.Colour(255, 255, 255))
-
-        bSizer9.Add(self.btn_configuracion, 0, wx.ALL, 5)
-
-
         self.btn_despachar_mercancia = wx.Button(self.m_panel3, wx.ID_ANY, u"Despachar Mercancia", wx.DefaultPosition, wx.Size(180, -1),
                                    wx.NO_BORDER)
         self.btn_despachar_mercancia.SetBackgroundColour(wx.Colour(109, 130, 253))
         self.btn_despachar_mercancia.SetForegroundColour(wx.Colour(255, 255, 255))
 
         bSizer9.Add(self.btn_despachar_mercancia, 0, wx.ALL, 5)
+
+        ## _____________________________________________________________________________________________________________
+
+        self.btn_ajustar_iventario_patio = wx.Button(self.m_panel3, wx.ID_ANY, u"Ajustar Inventario Patio", wx.DefaultPosition,
+                                                 wx.Size(180, -1),
+                                                 wx.NO_BORDER)
+        self.btn_ajustar_iventario_patio.SetBackgroundColour(wx.Colour(171, 184, 254))
+        self.btn_ajustar_iventario_patio.SetForegroundColour(wx.Colour(0, 0, 0))
+
+        bSizer9.Add(self.btn_ajustar_iventario_patio, 0, wx.ALL, 5)
+
+
+        ## _____________________________________________________________________________________________________________
 
         self.m_staticline1 = wx.StaticLine(self.m_panel3, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize,
                                            wx.LI_HORIZONTAL)
@@ -130,15 +136,6 @@ class Principal(wx.Frame):
 
 
 
-
-        self.btn_configuracion_general = wx.Button(self.m_panel3, wx.ID_ANY, u"Configuración",
-                                                    wx.DefaultPosition,
-                                                    wx.Size(180, -1),
-                                                    wx.NO_BORDER)
-        self.btn_configuracion_general.SetBackgroundColour(wx.Colour(255, 255, 255))
-
-        bSizer9.Add(self.btn_configuracion_general, 0, wx.ALL, 5)
-
         ## _____________________________________________________________________________________________________________
         self.btn_Reportes = wx.Button(self.m_panel3, wx.ID_ANY, u"Reportes",
                                                    wx.DefaultPosition,
@@ -148,6 +145,28 @@ class Principal(wx.Frame):
 
         bSizer9.Add(self.btn_Reportes, 0, wx.ALL, 5)
         ## _____________________________________________________________________________________________________________
+
+        self.btn_configuracion = wx.Button(self.m_panel3, wx.ID_ANY, u"Configuración", wx.DefaultPosition,
+                                           wx.Size(180, -1),
+                                           wx.NO_BORDER)
+        self.btn_configuracion.SetBackgroundColour(wx.Colour(255, 255, 255))
+
+        bSizer9.Add(self.btn_configuracion, 0, wx.ALL, 5)
+
+
+
+        ## _____________________________________________________________________________________________________________
+
+        # self.btn_configuracion_general = wx.Button(self.m_panel3, wx.ID_ANY, u"Configuración",
+        #                                            wx.DefaultPosition,
+        #                                            wx.Size(180, -1),
+        #                                            wx.NO_BORDER)
+        # self.btn_configuracion_general.SetBackgroundColour(wx.Colour(255, 255, 255))
+        #
+        # bSizer9.Add(self.btn_configuracion_general, 0, wx.ALL, 5)
+        ## _____________________________________________________________________________________________________________
+
+
 
         self.m_panel3.SetSizer(bSizer9)
         self.m_panel3.Layout()
@@ -179,7 +198,7 @@ class Principal(wx.Frame):
 
     ## valores iniciales EAY
 
-        self.btn_configuracion_general.Hide()
+        # self.btn_configuracion_general.Hide()
         self.ocultar_botones()
 
         self.Maximize()
@@ -192,7 +211,7 @@ class Principal(wx.Frame):
         self.btn_descargue_vagonetas.Bind(wx.EVT_BUTTON, self.btn_descargue_vagonetasOnButtonClick)
         self.btn_configuracion.Bind(wx.EVT_BUTTON, self.btn_configuracionOnButtonClick)
         self.btn_despachar_mercancia.Bind(wx.EVT_BUTTON, self.btn_despachar_mercanciaOnButtonClick)
-        self.btn_configuracion_general.Bind(wx.EVT_BUTTON, self.btn_configuracion_generalOnButtonClick)
+        self.btn_ajustar_iventario_patio.Bind(wx.EVT_BUTTON, self.btn_ajustar_iventario_patioOnButtonClick)
         self.btn_login.Bind(wx.EVT_BUTTON, self.btn_loginOnButtonClick)
         self.btn_Reportes.Bind(wx.EVT_BUTTON, self.btn_ReportesOnButtonClick)
         self.btn_cochado.Bind(wx.EVT_BUTTON, self.btn_cochadoOnButtonClick)
@@ -203,11 +222,8 @@ class Principal(wx.Frame):
 
     # Virtual event handlers, overide them in your derived class
     def btn_cochadoOnButtonClick(self, event):
-        obj_red = Red()
-        dir_mac = obj_red.dir_mac
-
         import formEAY.formularios.frm_procesos.frm_cochado as frm_cochado
-        frame_cochado = frm_cochado.Cochado(self, self.usuario, dir_mac)
+        frame_cochado = frm_cochado.Cochado(self, self.usuario, self.dir_mac)
         frame_cochado.Center()
         frame_cochado.Show()
         event.Skip()
@@ -215,7 +231,7 @@ class Principal(wx.Frame):
 
     def btn_ReportesOnButtonClick(self, event):
         import formEAY.formularios.frm_reportes.frm_gestion_reportes as frm_gestion_reportes
-        frame_gestion_reportes = frm_gestion_reportes.Reportes(self)
+        frame_gestion_reportes = frm_gestion_reportes.Reportes(self, self.usuario, self.dir_mac)
         frame_gestion_reportes.Center()
         frame_gestion_reportes.Show()
         event.Skip()
@@ -231,45 +247,34 @@ class Principal(wx.Frame):
 
         event.Skip()
 
-    def btn_configuracion_generalOnButtonClick(self, event):
-        # import formEAY.formularios.frm_generales.frm_configuracion_general as frm_configuracion_general
-        # frame_ConfiguracionGeneral = frm_configuracion_general.ConfiguracionGeneral(self)
-        # frame_ConfiguracionGeneral.Center()
-        # frame_ConfiguracionGeneral.Show()
-
-
-
+    def btn_ajustar_iventario_patioOnButtonClick(self, event):
+        import formEAY.formularios.frm_inventario.frm_ajuste_inventario_patio as frm_ajuste_inventario_patio
+        frame_ajuste_inventario_patio = frm_ajuste_inventario_patio.AjusteInventarioPatio(self, self.usuario, self.dir_mac)
+        frame_ajuste_inventario_patio.Center()
+        frame_ajuste_inventario_patio.Show()
         event.Skip()
+
 
     def btn_produccion_por_periodoOnButtonClick(self, event):
         event.Skip()
 
     def btn_extrusionOnButtonClick(self, event):
-        obj_red = Red()
-        dir_mac = obj_red.dir_mac
-
         import formEAY.formularios.frm_procesos.frm_extrusion as frm_extrusion
-        frame_extrusion = frm_extrusion.Extrusion(self, self.usuario, dir_mac)
+        frame_extrusion = frm_extrusion.Extrusion(self, self.usuario, self.dir_mac)
         frame_extrusion.Center()
         frame_extrusion.Show()
         event.Skip()
 
     def btn_cargue_vagonetasOnButtonClick(self, event):
-        obj_red = Red()
-        dir_mac = obj_red.dir_mac
-
         import formEAY.formularios.frm_procesos.frm_cargue_vagonetas as frm_cargue_vagonetas
-        frame_cargue_vagonetas = frm_cargue_vagonetas.CargueVagonetas(self, self.usuario, dir_mac)
+        frame_cargue_vagonetas = frm_cargue_vagonetas.CargueVagonetas(self, self.usuario, self.dir_mac)
         frame_cargue_vagonetas.Center()
         frame_cargue_vagonetas.Show()
         event.Skip()
 
     def btn_descargue_vagonetasOnButtonClick(self, event):
-        obj_red = Red()
-        dir_mac = obj_red.dir_mac
-
         import formEAY.formularios.frm_procesos.frm_descargue_vagonetas as frm_descargue_vagonetas
-        frame_descargue_vagonetas = frm_descargue_vagonetas.DescargueVagonetas(self, self.usuario, dir_mac)
+        frame_descargue_vagonetas = frm_descargue_vagonetas.DescargueVagonetas(self, self.usuario, self.dir_mac)
         frame_descargue_vagonetas.Center()
         frame_descargue_vagonetas.Show()
         event.Skip()
@@ -285,11 +290,8 @@ class Principal(wx.Frame):
         event.Skip()
 
     def btn_despachar_mercanciaOnButtonClick(self, event):
-        obj_red = Red()
-        dir_mac = obj_red.dir_mac
-
         import formEAY.formularios.frm_inventario.frm_despachar_mercancia  as frm_despachar_mercancia
-        frame_despachar_mercancia = frm_despachar_mercancia.DespacharMercancia(self, self.usuario, dir_mac)
+        frame_despachar_mercancia = frm_despachar_mercancia.DespacharMercancia(self, self.usuario, self.dir_mac)
         frame_despachar_mercancia.Center()
         frame_despachar_mercancia.Show()
         event.Skip()
@@ -297,8 +299,8 @@ class Principal(wx.Frame):
 ## FUNCIONES EAY
 
     def cargar_valores_de_inicializacion(self):
-        #self.btn_configuracion.Hide()
-        #self.btn_reporte_inventario.Hide()
+        obj_red = Red()
+        self.dir_mac = obj_red.dir_mac
         pass
 
     def ocultar_botones(self):
@@ -309,6 +311,7 @@ class Principal(wx.Frame):
         self.btn_configuracion.Hide()
         self.btn_despachar_mercancia.Hide()
         self.btn_cochado.Hide()
+        self.btn_ajustar_iventario_patio.Hide()
 
     def mostrar_botones(self, acceso, usuario):
         obj_red = Red()
@@ -318,7 +321,6 @@ class Principal(wx.Frame):
 
         self.usuario = usuario
         self.ocultar_botones()
-
 
         cad = 'Produccón Zuligres     ' + nom_equipo + '/' + ip_lan + '@' + usuario
 
@@ -334,17 +336,20 @@ class Principal(wx.Frame):
             self.btn_cochado.Show()
         if acceso == 'DESPACHO DE MERCANCIA':
             self.btn_despachar_mercancia.Show()
+            self.btn_ajustar_iventario_patio.Show()
         if acceso == 'DIGITADOR PROCESOS':
             self.btn_extrusion.Show()
             self.btn_cargue_vagonetas.Show()
             self.btn_descargue_vagonetas.Show()
             self.btn_cochado.Show()
+            self.btn_ajustar_iventario_patio.Show()
         if acceso == 'DIGITADOR':
             self.btn_extrusion.Show()
             self.btn_cargue_vagonetas.Show()
             self.btn_descargue_vagonetas.Show()
             self.btn_despachar_mercancia.Show()
             self.btn_cochado.Show()
+            self.btn_ajustar_iventario_patio.Show()
         if acceso == 'ADMINISTRADOR':
             self.btn_extrusion.Show()
             self.btn_cargue_vagonetas.Show()
@@ -353,6 +358,7 @@ class Principal(wx.Frame):
             self.btn_configuracion.Show()
             self.btn_cochado.Show()
             self.btn_Reportes.Show()
+            self.btn_ajustar_iventario_patio.Show()
         if acceso == 'SUPERUSUSARIO':
             self.btn_extrusion.Show()
             self.btn_cargue_vagonetas.Show()
@@ -361,6 +367,7 @@ class Principal(wx.Frame):
             self.btn_configuracion.Show()
             self.btn_cochado.Show()
             self.btn_Reportes.Show()
+            self.btn_ajustar_iventario_patio.Show()
         if acceso == 'ROOT':
             self.btn_extrusion.Show()
             self.btn_cargue_vagonetas.Show()
@@ -369,6 +376,7 @@ class Principal(wx.Frame):
             self.btn_configuracion.Show()
             self.btn_cochado.Show()
             self.btn_Reportes.Show()
+            self.btn_ajustar_iventario_patio.Show()
 
         self.btn_login.SetLabel('Salir')
         self.Refresh()

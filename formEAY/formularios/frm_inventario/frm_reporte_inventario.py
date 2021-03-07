@@ -91,7 +91,7 @@ class ReporteInventario(wx.Frame):
         self.grid_resumen = wx.grid.Grid(self.m_panel_principal, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, 0)
 
         # Grid
-        self.grid_resumen.CreateGrid(1, 7)
+        self.grid_resumen.CreateGrid(1, 8)
         self.grid_resumen.EnableEditing(False)
         self.grid_resumen.EnableGridLines(True)
         self.grid_resumen.EnableDragGridSize(False)
@@ -105,10 +105,11 @@ class ReporteInventario(wx.Frame):
         self.grid_resumen.SetColLabelValue(0, u"Unid 1ra")
         self.grid_resumen.SetColLabelValue(1, u"Unid 2da")
         self.grid_resumen.SetColLabelValue(2, u"Unid Extusion")
-        self.grid_resumen.SetColLabelValue(3, u"Unid Cargue")
-        self.grid_resumen.SetColLabelValue(4, u"Ton 1ra")
-        self.grid_resumen.SetColLabelValue(5, u"Ton 2da")
-        self.grid_resumen.SetColLabelValue(6, u"Total Ton")
+        self.grid_resumen.SetColLabelValue(3, u"Unid Cochado")
+        self.grid_resumen.SetColLabelValue(4, u"Unid Cargue")
+        self.grid_resumen.SetColLabelValue(5, u"Ton 1ra")
+        self.grid_resumen.SetColLabelValue(6, u"Ton 2da")
+        self.grid_resumen.SetColLabelValue(7, u"Total Ton")
         self.grid_resumen.SetColLabelAlignment(wx.ALIGN_CENTRE, wx.ALIGN_CENTRE)
 
         # Rows
@@ -133,7 +134,7 @@ class ReporteInventario(wx.Frame):
         self.grid_productos = wx.grid.Grid(self.m_panel_principal, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, 0)
 
         # Grid
-        self.grid_productos.CreateGrid(0, 10)
+        self.grid_productos.CreateGrid(0, 11)
         self.grid_productos.EnableEditing(False)
         self.grid_productos.EnableGridLines(True)
         self.grid_productos.EnableDragGridSize(False)
@@ -150,10 +151,11 @@ class ReporteInventario(wx.Frame):
         self.grid_productos.SetColLabelValue(3, u"Unid 1ra")
         self.grid_productos.SetColLabelValue(4, u"Unid 2da")
         self.grid_productos.SetColLabelValue(5, u"Unid Extusion")
-        self.grid_productos.SetColLabelValue(6, u"Unid Cargue")
-        self.grid_productos.SetColLabelValue(7, u"Ton 1ra")
-        self.grid_productos.SetColLabelValue(8, u"Ton 2da")
-        self.grid_productos.SetColLabelValue(9, u"Total Ton")
+        self.grid_productos.SetColLabelValue(6, u"Unid Cochado")
+        self.grid_productos.SetColLabelValue(7, u"Unid Cargue")
+        self.grid_productos.SetColLabelValue(8, u"Ton 1ra")
+        self.grid_productos.SetColLabelValue(9, u"Ton 2da")
+        self.grid_productos.SetColLabelValue(10, u"Total Ton")
         self.grid_productos.SetColLabelAlignment(wx.ALIGN_CENTRE, wx.ALIGN_CENTRE)
 
         # Rows
@@ -249,7 +251,7 @@ class ReporteInventario(wx.Frame):
 
         ws.title = "Reporte General de Inventario"
 
-        cabeceras = ['id', 'Producto', 'Categoria', 'Unid 1ra', 'Unid 2da', 'Unid Extusion', 'Unid Cargue',
+        cabeceras = ['id', 'Producto', 'Categoria', 'Unid 1ra', 'Unid 2da', 'Unid Extusion', 'Unid Cochado', 'Unid Cargue',
                       'Ton 1ra', 'Ton 2da', 'Total Ton']
         ##  --------------------------------
 
@@ -281,7 +283,7 @@ class ReporteInventario(wx.Frame):
 
             ws['A4'] = ''  # filas vacias pora dar orden
 
-            cabeceras_resumen = ['Unid 1ra', 'Unid 2da', 'Unid Extusion', 'Unid Cargue', 'Ton 1ra', 'Ton 2da', 'Total Ton']
+            cabeceras_resumen = ['Unid 1ra', 'Unid 2da', 'Unid Extusion', 'Unid Cochado', 'Unid Cargue', 'Ton 1ra', 'Ton 2da', 'Total Ton']
 
             ws.append(cabeceras_resumen)
             ws.append(self.rows_resumen[0])
@@ -341,10 +343,13 @@ class ReporteInventario(wx.Frame):
         # list_columnas = [4, 5, 6]
         # ManipularGrillas.ocultarColumnasGrilla(self.grid_resumen, list_columnas)
 
+        
+
     def func_cargar_grilla_productos(self):
 
         sSql = """
-                SELECT id_producto, nom_producto, categoria, stock_primera, stock_segunda, stock_extrusion, stock_cargue,                        
+                SELECT id_producto, nom_producto, categoria, stock_primera, stock_segunda, stock_extrusion, stock_cochado,
+                        stock_cargue,                        
                         TRUNC(peso * stock_primera / 1000000.0, 2) as ton_1ra, 
                         TRUNC(peso * stock_segunda / 1000000.0, 2) as ton_2da, 
                         TRUNC(((peso * stock_primera)+(peso * stock_segunda)) / 1000000.0, 2) as total_ton
@@ -352,16 +357,21 @@ class ReporteInventario(wx.Frame):
                 WHERE activo = 'True'
         """
 
-        cabeceras = ['id', 'Producto', 'Categoria', 'Unid 1ra', 'Unid 2da', 'Unid Extusion', 'Unid Cargue', 'Ton 1ra', 'Ton 2da', 'Total Ton']
+        cabeceras = ['id', 'Producto', 'Categoria', 'Unid 1ra', 'Unid 2da', 'Unid Extusion', 'Unid Cochado', 'Unid Cargue',
+                     'Ton 1ra', 'Ton 2da', 'Total Ton']
 
 
         self.rows = Ejecutar_SQL.select_varios_registros(sSql, 'frm_reporte_inventario/func_cargar_grilla_productos', 500, BasesDeDatos.DB_PRINCIPAL)
 
 
+
         df = pd.DataFrame(self.rows, columns = cabeceras)
 
+
         #df = df.groupby(['id']).sum()
-        df = df[['Unid 1ra', 'Unid 2da', 'Unid Extusion', 'Unid Cargue', 'Ton 1ra', 'Ton 2da', 'Total Ton']].sum()
+        #df = df[['Unid 1ra', 'Unid 2da', 'Unid Extusion', 'Unid Cochado', 'Unid Cargue', 'Ton 1ra', 'Ton 2da', 'Total Ton']].sum()
+        df = df[['Unid 1ra', 'Unid 2da', 'Unid Extusion', 'Unid Cochado', 'Unid Cargue',
+                     'Ton 1ra', 'Ton 2da', 'Total Ton']].sum()
 
         self.rows_resumen = []
         self.rows_resumen.append(df.tolist())
@@ -376,7 +386,7 @@ class ReporteInventario(wx.Frame):
 
         self.columna = columna
 
-        lista_tipoColumna = ['int', 'str', 'str', 'int', 'int', 'int', 'int',
+        lista_tipoColumna = ['int', 'str', 'str', 'int', 'int', 'int', 'float',
                              'float', 'float', 'float']
 
         ManipularGrillas.ordenarGrillaPorColumna(self.grid_productos,  self.columna, lista_tipoColumna,
@@ -402,7 +412,7 @@ class ReporteInventario(wx.Frame):
         #              }
 
         dic_color = {3: UNID_PRIMERA_AZUL, 4: UNID_SEGUNDA_AZUL,
-                     7: TON_PRIMERA_LILA, 8: TON_SEGUNDA_LILA, 9: TON_TOTAL_LILA }
+                     8: TON_PRIMERA_LILA, 9: TON_SEGUNDA_LILA, 10: TON_TOTAL_LILA }
         ManipularGrillas.setColorFondoCeldaGrilla(self.grid_productos, dic_color)
 
 

@@ -57,7 +57,7 @@ class DescargueVagonetas(wx.Frame):
         self.dir_mac = dir_mac
 
         icono_grillas = Img_grillas()
-        img_produccion = Img_produccion()
+        self.img_produccion = Img_produccion()
 
         bSizer_cargueVagonetas = wx.BoxSizer(wx.VERTICAL)
 
@@ -73,7 +73,7 @@ class DescargueVagonetas(wx.Frame):
         bSizer7 = wx.BoxSizer(wx.VERTICAL)
 
         self.bitmap_logo_proceso = wx.StaticBitmap(self.panel_cabecera, wx.ID_ANY,
-                                                   wx.Bitmap(img_produccion.DESCARGUE_VAGONETAS,
+                                                   wx.Bitmap(self.img_produccion.DESCARGUE_VAGONETAS,
                                                              wx.BITMAP_TYPE_ANY), wx.DefaultPosition, wx.DefaultSize, 0)
         bSizer7.Add(self.bitmap_logo_proceso, 0, wx.ALL, 5)
 
@@ -656,6 +656,11 @@ class DescargueVagonetas(wx.Frame):
                                                wx.DefaultSize, 0)
         bSizer56.Add(self.btn_ver_procedimiento, 0, wx.ALL, 5)
 
+        self.btn_ver_ultimoProceso = wx.Button(self, wx.ID_ANY, u"Ver Ultimo Proceso", wx.DefaultPosition,
+                                               wx.DefaultSize, 0)
+        bSizer56.Add(self.btn_ver_ultimoProceso, 0, wx.ALL, 5)
+
+
         bSizer_pie_de_formulario.Add(bSizer56, 0, wx.EXPAND, 5)
 
         bSizer55 = wx.BoxSizer(wx.HORIZONTAL)
@@ -692,6 +697,9 @@ class DescargueVagonetas(wx.Frame):
 
         # Connect Events
         #self.grid_descargue_vagonetas
+
+        self.btn_ver_ultimoProceso.Bind(wx.EVT_BUTTON, self.btn_ver_ultimoProcesoOnButtonClick)
+
         self.grid_descargue_vagonetas.Bind(wx.grid.EVT_GRID_CELL_LEFT_DCLICK, self.grid_descargue_vagonetasOnGridCellLeftDClick)
 
         self.comboBox_turno.Bind(wx.EVT_LEFT_DOWN, self.comboBox_turnoOnLeftDown)
@@ -737,6 +745,17 @@ class DescargueVagonetas(wx.Frame):
         pass
 
     # Virtual event handlers, overide them in your derived class
+
+    def btn_ver_ultimoProcesoOnButtonClick(self, event):
+        import formEAY.formularios.frm_procesos.frm_vista_previa_proceso as frm_vista_previa_proceso
+        frame_vistaPrevia = frm_vista_previa_proceso.VistaPreviaProceso(self, self.usuario, self.dir_mac,
+                                                                        self.img_produccion.DESCARGUE_VAGONETAS,
+                                                                        'DESCARGUE DE VAGONETAS')
+        frame_vistaPrevia.Center()
+        frame_vistaPrevia.Show()
+        event.Skip()
+
+
     def grid_descargue_vagonetasOnGridCellLeftDClick(self, event):
         fila = event.GetRow()
         columna = event.GetCol()

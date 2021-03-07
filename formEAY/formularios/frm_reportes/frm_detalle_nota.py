@@ -201,7 +201,7 @@ class DetalleNota(wx.Frame):
         sSql = """ UPDATE notas_por_proceso SET activo = '{0}', relevancia = '{1}',  estado = '{2}', nota = '{3}', 
                             contranota = '{4}'
                     WHERE id = {5}
-        """.format(activo, relevancia, estado, nota, contranota, id_nota)
+        """.format(activo, relevancia, estado, nota.upper(), contranota.upper(), id_nota)
 
         rta = Ejecutar_SQL.update_filas(sSql, 'btn_guardar  en frm_detalle_nota', BasesDeDatos.DB_PRINCIPAL)
 

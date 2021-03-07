@@ -1,4 +1,5 @@
 
+
 import os
 
 #LARUTA='C:/Users/svrCAC/PycharmProjects/ferretubosPrueba/formEAY/img/'

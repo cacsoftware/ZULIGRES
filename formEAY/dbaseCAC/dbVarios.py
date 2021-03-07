@@ -454,16 +454,51 @@ class DbInsertVarios():
 
                 list_valores.append(list_fila)
 
-
         sSql_insert_DetalleCargueVagonetas = GenerarSql.crearMultiInsertSql(nom_tabla, dic_campos, list_valores)
-
-        print(sSql_insert_DetalleCargueVagonetas)
-
-
 
         rta_insert_DetalleCargueVagonetas = Ejecutar_SQL.insert_filas(sSql_insert_DetalleCargueVagonetas, nom_funcion, BasesDeDatos.DB_PRINCIPAL)
 
         return rta_insert_DetalleCargueVagonetas, list_valores
+
+    @staticmethod
+    ## no se esta utilizando
+    def roturaCargueVagonetas(self):
+        nom_funcion = base_nom_funcion + 'roturaCargueVagonetas'
+
+        nom_tabla = 'rotura_cargue_vagonetas'
+        dic_campos = {
+            'id_producto': 'int',
+            'producto': 'str',
+            'cant_rotos': 'int',
+            'activo': 'str',
+            'uuid': 'str'
+        }
+
+        cant_filas = self.grid_rotura.GetNumberRows()
+        cant_columnas = self.grid_rotura.GetNumberCols()
+        list_valores = []
+
+        if cant_filas < 1:
+            return 0
+
+        for i in range(cant_filas):
+            id_producto = self.grid_rotura.GetCellValue(i, 0)
+            producto = self.grid_rotura.GetCellValue(i, 1)
+            unidades_producto = self.grid_rotura.GetCellValue(i, 2)
+            if unidades_producto == '':
+                unidades_producto = 0
+
+            list_valores.append([id_producto, producto, unidades_producto, 'True', self.uuid_eay])
+
+        sSql_insert_RoturaCargueVagonetas = GenerarSql.crearMultiInsertSql(nom_tabla, dic_campos, list_valores)
+
+        print(list_valores)
+        print(sSql_insert_RoturaCargueVagonetas)
+
+        rta_insert_RoturaCargueVagonetas = Ejecutar_SQL.insert_filas(sSql_insert_RoturaCargueVagonetas, nom_funcion,
+                                                                      BasesDeDatos.DB_PRINCIPAL)
+
+        return rta_insert_RoturaCargueVagonetas
 
     @staticmethod
     def detalleDescargueVagonetas(self):

@@ -50,7 +50,7 @@ class Extrusion(wx.Frame):
         self.dir_mac = dir_mac
 
         icono_grillas = Img_grillas()
-        img_produccion = Img_produccion()
+        self.img_produccion = Img_produccion()
 
         bSizer_extrusion = wx.BoxSizer(wx.VERTICAL)
 
@@ -66,7 +66,7 @@ class Extrusion(wx.Frame):
         bSizer7 = wx.BoxSizer(wx.VERTICAL)
 
         self.bitmap_logo_proceso = wx.StaticBitmap(self.panel_cabecera, wx.ID_ANY,
-                                                   wx.Bitmap(img_produccion.EXTRUSION,
+                                                   wx.Bitmap(self.img_produccion.EXTRUSION,
                                                              wx.BITMAP_TYPE_ANY), wx.DefaultPosition, wx.DefaultSize, 0)
         bSizer7.Add(self.bitmap_logo_proceso, 0, wx.ALL, 5)
 
@@ -763,6 +763,10 @@ class Extrusion(wx.Frame):
                                                wx.DefaultSize, 0)
         bSizer56.Add(self.btn_ver_procedimiento, 0, wx.ALL, 5)
 
+        self.btn_ver_ultimoProceso = wx.Button(self, wx.ID_ANY, u"Ver Ultimo Proceso", wx.DefaultPosition,
+                                               wx.DefaultSize, 0)
+        bSizer56.Add(self.btn_ver_ultimoProceso, 0, wx.ALL, 5)
+
         bSizer_pie_de_formulario.Add(bSizer56, 0, wx.EXPAND, 5)
 
         bSizer55 = wx.BoxSizer(wx.HORIZONTAL)
@@ -798,6 +802,8 @@ class Extrusion(wx.Frame):
         self.cargar_valores_de_inicializacion()
 
         # Connect Events
+
+        self.btn_ver_ultimoProceso.Bind(wx.EVT_BUTTON, self.btn_ver_ultimoProcesoOnButtonClick)
 
 
         self.m_notebook1.Bind(wx.EVT_NOTEBOOK_PAGE_CHANGED, self.m_notebook1OnNotebookPageChanged)
@@ -852,6 +858,13 @@ class Extrusion(wx.Frame):
         pass
 
     # Virtual event handlers, overide them in your derived class
+
+    def btn_ver_ultimoProcesoOnButtonClick(self, event):
+        import formEAY.formularios.frm_procesos.frm_vista_previa_proceso as frm_vista_previa_proceso
+        frame_vistaPrevia = frm_vista_previa_proceso.VistaPreviaProceso(self, self.usuario, self.dir_mac, self.img_produccion.EXTRUSION, 'EXTRUSION')
+        frame_vistaPrevia.Center()
+        frame_vistaPrevia.Show()
+        event.Skip()
 
     def m_notebook1OnNotebookPageChanged(self, event):
         if self.m_notebook1.GetSelection() == 1:  ## 1 es la pagina de recesos programados
@@ -1034,9 +1047,11 @@ class Extrusion(wx.Frame):
 
         total_unidades = (int(cant_coches) * int(unidades_x_coche)) - int(unidades_parrillas_vacias)
 
-        row = [id_producto, producto, coche, cant_coches, unidades_x_coche, unidades_parrillas_vacias, total_unidades, contador]
+        row = [id_producto, producto, coche, cant_coches, unidades_x_coche, unidades_parrillas_vacias, total_unidades,
+               contador]
 
-        self.puntero_fila_extrusion = ManipularGrillas.nuevaFilaGrilla(self.grid_extrusion, row, self.puntero_fila_extrusion)
+        self.puntero_fila_extrusion = ManipularGrillas.nuevaFilaGrilla(self.grid_extrusion, row,
+                                                                       self.puntero_fila_extrusion)
 
         dic_color = {6: COLOR_RESALTE1}
         ManipularGrillas.setColorFondoCeldaGrilla(self.grid_extrusion, dic_color)
@@ -1280,9 +1295,9 @@ class Extrusion(wx.Frame):
         cols_busqueda = [0]
         cols_a_modificar = [1]
 
-        dic_operaciones = {'stock_extrusion':'stock_extrusion + '}
+        dic_operaciones = {'stock_primera':'stock_extrusion + '}
 
-        nom_campos = ['id_producto', 'stock_extrusion']
+        nom_campos = ['id_producto', 'stock_primera']
         tipo_campos = ['int', 'int']
 
         sSql = GenerarSql.crearMultiUpdateSql_operaciones(nom_tabla, rows, cols_busqueda, cols_a_modificar, nom_campos,
@@ -1298,7 +1313,7 @@ class Extrusion(wx.Frame):
         fila = []
 
         for i in range(cant_filas):
-            for j in [0, 4]:  ## numero de columna
+            for j in [0, 6]:  ## numero de columna
                 fila.append(int(self.grid_extrusion.GetCellValue(i, j)))
             datos.append(fila)
             fila = []
